@@ -1,0 +1,22 @@
+#!/bin/sh
+# @(#) Print IP address only (for Mac OS X). Version 1.0.1.20130826
+
+PATH=/bin:/sbin:/usr/bin
+LANG=C
+
+ifconfig |
+sed '
+1!{
+    /^[[:graph:]]/i\
+\
+
+}' |
+awk '
+BEGIN {
+    FS = "\n"
+    RS = ""
+}
+$1 !~ /LOOPBACK/ && /inet/ {
+    print sep $0
+    sep = "\n"
+}'

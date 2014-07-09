@@ -1,0 +1,40 @@
+#!/bin/sh
+# @(#) Select dead symlinks from arguments. Version 3.2.0.20140708
+# need Perl 5
+#
+# bug:
+#   ----
+#   xxxx -> yyyy (File xxxx is symlink to yyyy.)
+#   yyyy -> zzzz (File yyyy is deadlink! file zzzz is not exist.)
+#   ----
+#   In above case, this script assumes that file xxxx is deadlink.
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+readonly progname=`basename "$0"`
+
+usage() {
+    cat <<- EOT 1>&2
+		usage: $progname -h
+		       $progname [file ...]
+		       $progname - <filelist
+	EOT
+    exit $1
+}
+
+opt=
+while getopts 'h' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+if [ $# -eq 1 -a "$1" = '-' ]; then
+    perl -n -e 'chomp; -l $_ && ! -e $_ && print "$_\n";'
+else
+    for i; do
+        [ -L "$i" -a ! -e "$i" ] && echo "$i"
+    done
+fi

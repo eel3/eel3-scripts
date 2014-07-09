@@ -1,0 +1,17 @@
+#!/bin/sh
+# @(#) Print IP address only. Version 1.0.1.20130104
+
+PATH=/bin:/sbin:/usr/bin
+LANG=C
+
+ifconfig | awk '
+BEGIN {
+    FS = "\n"
+    RS = ""
+}
+$1 !~ /Local Loopback/ && /inet/ {
+    print sep $1
+    print $2
+    print $3
+    sep = "\n"
+}'

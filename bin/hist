@@ -1,0 +1,134 @@
+#!/bin/sh
+# @(#) Generate histogram from text like seq(1). Version 1.0.0.20131002
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+readonly progname=`basename "$0"`
+
+# my_tac [file ...]
+# substitutes for tac(1) or `tail -r`
+my_tac () {
+    sed '1!G;h;$!d' ${@+"$@"}
+}
+
+# isnumber <value>
+isnumber () {
+    [ "$1" -eq 0 ] 2>/dev/null
+    [ $? -lt 2 ]
+}
+
+# error <message>
+error() {
+    echo "$progname:" "$@" 1>&2
+    exit 1
+}
+
+# do_exit <status>
+do_exit() {
+    rm -f "$tmpfile"
+    exit $1
+}
+
+# usage <status>
+usage() {
+    echo "usage: $progname [-c <class-witch>] [-h] [-r] [-s <start-number|min>] [file ...]" 1>&2
+    exit $1
+}
+
+class_width=10
+catcmd=cat
+start_number=0
+
+opt=
+while getopts 'c:hrs:' opt; do
+    case $opt in
+    c)      class_width=$OPTARG
+            isnumber "$class_width" || \
+                error "-c \"$class_width\": Not number"
+            [ "$class_width" -ge 1 ] || \
+                error "-c \"$class_width\": Must greater than or equal to 1"
+            ;;
+    h)      usage 0
+            ;;
+    r)      catcmd=my_tac
+            ;;
+    s)      start_number=$OPTARG
+            [ "$start_number" = min ] || isnumber "$start_number" || \
+                error "-s \"$start_number\": Not number"
+            ;;
+    \?)     usage 1
+            ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+trap 'rm -f "$tmpfile"; exit 1' 1 2 15
+
+tmpfile=`mktemp "$progname.$$.XXXXXXXXXX"`
+[ $? -eq 0 ] || error "cannot create temporary file"
+
+nsamples=`sed '/^[    ]*$/d' ${@+"$@"} | sort -n | tee "$tmpfile" | wc -l`
+[ "$nsamples" -ge 1 ] || do_exit 0
+
+[ "$start_number" = min ] && start_number=`head -1 "$tmpfile"`
+
+awk -v "class_width=$class_width" \
+    -v "nsamples=$nsamples" \
+    -v "progname=$progname" \
+    -v "start_number=$start_number" '
+BEGIN {
+    aborted = 0
+    nhist = 0
+    min = start_number
+    max = min + class_width
+    min_length = length(min)
+    max_length = length(max)
+    class_sample_length = 1
+}
+$1 !~ /^[-+]?[0-9]+(\.[0-9]+)?$/ {
+    printf("%s: %s is not number\n", progname, $1) > "/dev/stderr"
+    aborted = 1
+    exit
+}
+$1 < min {
+    printf("%s: %d is less than start-number %d\n", progname, $1, min) > "/dev/stderr"
+    aborted = 1
+    exit
+}
+$1 < max {
+    hist[nhist]++
+    next
+}
+{
+    if (length(hist[nhist]) > class_sample_length) {
+        class_sample_length = length(hist[nhist])
+    }
+
+    do {
+        nhist++
+        min += class_width
+        max += class_width
+    } while ($1 >= max)
+    hist[nhist]++
+
+    if (length(min) > min_length) {
+        min_length = length(min)
+    }
+    if (length(max) > max_length) {
+        max_length = length(max)
+    }
+}
+END {
+    if (aborted) {
+        exit 1
+    }
+    nhist++
+    for (i = 0; i < nhist; i++) {
+        printf("%*d - %*d : %*d : %8.5f %%\n",
+               min_length, start_number + class_width * i,
+               max_length, start_number + class_width * (i+1) - 1,
+               class_sample_length, hist[i], hist[i] * 100 / nsamples)
+    }
+}' "$tmpfile" | $catcmd
+
+rm -f "$tmpfile"

@@ -1,0 +1,36 @@
+#!/bin/sh
+# @(#) Substitutes for realpath(1). Version 1.0.0.20140625
+
+PATH=/bin:/usr/bin:/usr/local/bin
+
+readonly progname=`basename "$0"`
+
+# error [message ...]
+error() {
+    echo ${@+"$@"} 2>&1
+}
+
+# usage <status>
+usage() {
+    error "usage: $progname [-h] [--help] <file>"
+    exit $1
+}
+
+[ $# = 1 ] || usage 1
+
+case "$1" in
+-h|--help)  usage 0 ;;
+esac
+
+if [ ! -e "$1" ]; then
+    error "$1: no such file or directory"
+    exit 1
+fi
+
+rp=`readlink "$1"`
+if [ -z "$rp" ]; then
+    cd `dirname "$1"`
+    echo `pwd`/`basename "$1"`
+else
+    exec "$0" "$rp"
+fi

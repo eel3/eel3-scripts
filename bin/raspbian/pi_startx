@@ -1,0 +1,3 @@
+#!/bin/sh
+# @(#) startx(1) wrapper for Raspbian (Japanese environment). Version 1.0.0.20140110
+LANG=ja_JP.UTF-8 startx

@@ -1,0 +1,29 @@
+#!/bin/sh
+# @(#) ping(8) to all local IPv4 address. Version 2.0.0
+
+readonly addrbase=192.168.24.
+
+# ping(8) with option:
+# for Linux, NetBSD, OpenBSD
+#readonly pingcmd='ping -c 1 -w 1'
+# for FreeBSD, Mac OS X
+readonly pingcmd='ping -c 1 -t 1'
+
+# sort(1) with option:
+# for GNU coreutils
+#readonly sortcmd='sort -V'
+# for others
+readonly sortcmd='sort -t . -k 4 -n'
+
+# do_ping <IP address>
+do_ping () {
+    $pingcmd $1 >/dev/null
+    [ $? -eq 0 ] && echo $1
+}
+
+{
+    for i in `seq 1 254`; do
+        do_ping $addrbase$i &
+    done
+    wait
+} | $sortcmd

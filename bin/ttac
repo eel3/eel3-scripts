@@ -1,0 +1,18 @@
+#!/bin/sh
+# @(#) Substitutes for tac(1) or `tail -q -r`. Version 1.1.0.20140708
+
+usage() {
+    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    exit $1
+}
+
+opt=
+while getopts 'h' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+exec sed '1!G;h;$!d' ${@+"$@"}

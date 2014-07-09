@@ -1,0 +1,40 @@
+#!/bin/sh
+# @(#) Select arguments. Version 3.0.1.20130105
+# Original code is 'The UNIX Programming Environment' Sec.5.7.
+
+PATH=/bin:/usr/bin
+
+header=
+footer='? [Yes|No|Quit]: '
+
+do_pick() {
+    echo -n "$header$1$footer" >/dev/tty
+    read response
+    case $response in
+    [Yy]|[Yy]es|YES)      echo "$i" ;;
+    [Qq]|[Qq]uit|QUIT)    break ;;
+    esac
+}
+
+opt=
+while getopts 'f:h:' opt; do
+    case $opt in
+    f)      footer="$OPTARG" ;;
+    h)      header="$OPTARG" ;;
+    \?)     echo "usage: `basename "$0"` [-f footer] [-h header] [args ...]" 1>&2
+            exit 1
+            ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+if [ $# -eq 1 -a "$1" = '-' ]; then
+    # Trims IFS character from the beginning and end of the $i.
+    while read i; do
+        do_pick "$i" </dev/tty
+    done
+else
+    for i; do
+        do_pick "$i"
+    done </dev/tty
+fi

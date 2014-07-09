@@ -1,0 +1,23 @@
+#!/bin/sh
+# @(#) Unlock files and make them removable (for Mac OS X). Version 1.0.0.20131107
+
+PATH=/bin:/usr/bin
+
+# usage <status>
+usage() {
+    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    exit $1
+}
+
+opt=
+while getopts 'h' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+[ $# -ge 1 ] || usage 1
+
+exec chflags -R nouchg ${@+"$@"}
