@@ -1,0 +1,18 @@
+#!/bin/sh
+# $(#) Search case-insensitive duplicates. Version 1.0.0.20140730
+
+usage() {
+    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    exit $1
+}
+
+opt=
+while getopts 'h' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+exec cat ${@+"$@"} | tr A-Z a-z | sort | uniq -d
