@@ -1,5 +1,5 @@
 #!/bin/sh
-# @(#) Convert Markdown to HTML. Version 1.0.0.20150205
+# @(#) Convert Markdown to HTML. Version 1.0.0.20150212
 # need Node.js, marked
 
 readonly highlight_url=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/
@@ -7,13 +7,14 @@ readonly copyright_name=eel3
 
 usage() {
     cat <<-EOF 1>&2
-		usage: `basename "$0"` [-h] [-cgr] [-o output-file] [input-file]
+		usage: `basename "$0"` [-h] [-cg] [-o output-file] [-r year-and-name] [input-file]
 		option:
 		    -c  Enable code syntax highlight (using highlight.js).
 		    -g  Add header with generated time.
 		    -h  Show this text and exit.
 		    -o  Specify file output. If none is specified, write to stdout.
-		    -r  Add footer with copyright.
+		    -r  Add footer with copyright. Use argument as a template for copyright.
+		        If the length of argument is zero, apply default template.
 	EOF
     exit $1
 }
@@ -23,13 +24,15 @@ color=false
 gentime=false
 output=
 copyright=false
-while getopts 'cgho:r' opt; do
+copyright_body="`date '+%Y'` $copyright_name."
+while getopts 'cgho:r:' opt; do
     case $opt in
     c)      color=true ;;
     g)      gentime=true ;;
     h)      usage 0 ;;
     o)      output=$OPTARG ;;
-    r)      copyright=true ;;
+    r)      copyright=true
+            [ -n "$OPTARG" ] && copyright_body=$OPTARG ;;
     \?)     usage 1 ;;
     esac
 done
@@ -120,7 +123,7 @@ marked --gfm --table --lang-prefix '' ${@+"$@"}
 if $copyright; then
     cat <<EOF
 <footer>
-<p>&copy; `date '+%Y'` $copyright_name.</p>
+<p>&copy; $copyright_body</p>
 </footer>
 EOF
 fi
