@@ -1,0 +1,69 @@
+#!/usr/bin/env ruby
+# vim:fileencoding=UTF-8
+# @(#) Print character code point.
+
+require "kconv"
+require 'optparse'
+
+KCONV_ENCODING_MAP = {
+  Kconv::ASCII   => Encoding::US_ASCII,
+  Kconv::BINARY  => Encoding::ASCII_8BIT,
+  Kconv::EUC     => Encoding::EUC_JP,
+  Kconv::JIS     => Encoding::ISO_2022_JP,
+  Kconv::SJIS    => Encoding::Shift_JIS,
+  Kconv::UNKNOWN => Encoding::ASCII_8BIT,
+  Kconv::UTF16   => Encoding::UTF_16BE,
+  Kconv::UTF8    => Encoding::UTF_8,
+}
+
+OP_ENCODING_MAP = {
+  'ASCII'       => Encoding::US_ASCII,
+  'CP932'       => Encoding::Windows_31J,
+  'EUC-JP'      => Encoding::EUC_JP,
+  'ISO-2022-JP' => Encoding::ISO_2022_JP,
+  'Shift_JIS'   => Encoding::Shift_JIS,
+  'UTF-16'      => Encoding::UTF_16,
+  'UTF-16BE'    => Encoding::UTF_16BE,
+  'UTF-16LE'    => Encoding::UTF_16LE,
+  'UTF-8'       => Encoding::UTF_8,
+  'Windows-31J' => Encoding::Windows_31J,
+  'binary'      => Encoding::ASCII_8BIT,
+}
+
+def guess_encoding(s)
+  KCONV_ENCODING_MAP[Kconv.guess(s)] || Encoding::ASCII_8BIT
+end
+
+force_encoding = false
+encoding = Encoding::ASCII_8BIT
+
+OptionParser.new {|op|
+  begin
+    op.banner = "usage: #{op.program_name} [options] [file...]"
+    op.release = '2015-02-12'
+    op.summary_width = 80
+    op.version = '1.0.0'
+
+    op.on('-e', "--encoding <#{OP_ENCODING_MAP.keys.sort.join('|')}>", OP_ENCODING_MAP) {|v|
+      force_encoding = true
+      encoding = v
+    }
+    op.permute!
+  rescue
+    abort op.help
+  end
+}
+
+readlines(nil).each do |t|
+  unless force_encoding
+    encoding = guess_encoding(t)
+  end
+  if t.encoding != encoding
+    t.force_encoding(encoding)
+  end
+
+  puts "# #{t.encoding}"
+  t.each_codepoint do |c|
+    printf("%s\t%d\t%02X\n", c.chr(t.encoding).inspect, c, c)
+  end
+end

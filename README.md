@@ -19,6 +19,7 @@ Set up
 ------
 
 1. If you want to use all scripts, you must install some tools in the dependency.
+  * ce(1) : Ruby 2.0.x
   * deadlink(1) : Perl 5
   * funcname(1) : Exuberant Ctags
   * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
