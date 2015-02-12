@@ -40,9 +40,7 @@ shift `expr $OPTIND - 1`
 
 [ $# -le 1 ] || usage 1
 
-if [ -n "$output" ]; then
-    exec >"$output"
-fi
+[ -n "$output" ] && exec >"$output"
 
 cat <<'EOF'
 <!DOCTYPE html>
