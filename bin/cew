@@ -1,0 +1,10 @@
+#!/bin/sh
+# @(#) ce(1) wrapper script. Version 1.0.0.20150213
+# need Open usp Tukubai, ce
+
+exec ce ${@+"$@"} |
+sed '/^[ \t]*#/d' |
+sed 's/" "/"sp"/g' |
+tr '\t' ' ' |
+keta -- |
+sed 's/"sp"/" " /g'
