@@ -55,12 +55,8 @@ OptionParser.new {|op|
 }
 
 readlines(nil).each do |t|
-  unless force_encoding
-    encoding = guess_encoding(t)
-  end
-  if t.encoding != encoding
-    t.force_encoding(encoding)
-  end
+  encoding = guess_encoding(t) unless force_encoding
+  t.force_encoding(encoding) if t.encoding != encoding
 
   puts "# #{t.encoding}"
   t.each_codepoint do |c|
