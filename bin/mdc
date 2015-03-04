@@ -1,5 +1,5 @@
 #!/bin/sh
-# @(#) Convert Markdown to HTML. Version 1.0.0.20150212
+# @(#) Convert Markdown to HTML. Version 1.0.1.20150303
 # need Node.js, marked
 
 readonly highlight_url=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/
@@ -60,6 +60,9 @@ cat <<'EOF'
 <style type="text/css">
 body {
   margin: 2em
+}
+code {
+  background-color: #F8F8F8;
 }
 dd, dt, li, p {
   line-height: 1.5em;
