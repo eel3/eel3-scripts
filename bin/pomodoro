@@ -1,0 +1,31 @@
+#!/bin/sh
+# @(#) Simple Pomodoro Technique tool. Version 1.0.0.20150312
+
+# unit of time: minute
+readonly worktime=25
+readonly breaktime_short=5
+readonly breaktime_long=15
+
+# notify <type> <minutes>
+notify() {
+    tbeep
+    echo "$1" time "($2 minutes):" start at `date +%T`
+}
+
+# session <type> <minutes>
+session() {
+    notify "$1" "$2"
+    sleep `expr 60 \* "$2"`
+}
+
+# pomodoro_1set [no option] [no argument]
+pomodoro_1set() {
+    for i in `seq 3`; do
+        session Work $worktime
+        session Break $breaktime_short
+    done
+    session Work $worktime
+    notify Break $breaktime_long
+}
+
+pomodoro_1set
