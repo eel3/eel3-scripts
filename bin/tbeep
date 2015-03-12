@@ -1,0 +1,4 @@
+#!/bin/sh
+# @(#) Substitutes for beep(1). Version 1.0.0.20150312
+
+printf '\a'
