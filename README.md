@@ -28,7 +28,7 @@ Set up
 4. Execute make(1) for creating symlink to environment-dependent scripts.
 
 | Environment             | target of make |
-|:------------------------|:--------------:|
+|:------------------------|:---------------|
 | Linux                   | linux          |
 | Mac OS X                | mac            |
 | Raspbian (Raspberry Pi) | raspbian       |
