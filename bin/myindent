@@ -1,0 +1,68 @@
+#!/bin/sh
+# @(#) My source code formatter. Version 1.0.2.20151203
+# need astyle (Artistic Style), Perl 5
+
+set -u
+umask 0022
+IFS=`printf ' \t\n_'`; IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+# usage <status>
+usage() {
+    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    exit $1
+}
+
+# do_astyle [file ...]
+do_astyle() {
+    astyle --style=kr \
+           --indent=tab=4 \
+           --indent-namespaces \
+           --indent-labels \
+           --indent-preproc-define \
+           --break-blocks \
+           --pad-oper \
+           --pad-header \
+           --unpad-paren \
+           --add-brackets \
+           --align-method-colon \
+           --unpad-method-prefix \
+           --pad-method-colon=none \
+           --max-code-length=120 \
+           --errors-to-stdout \
+           ${@+"$@"}
+}
+
+# RMCBL; ReMove Consecutive Blank Line (except the first)
+# `-i' option
+rmcbl_iopt=
+
+# rmcbl [file ...]
+rmcbl() {
+    perl -0777 -p $rmcbl_iopt -e '
+      foreach my $nl ("\r\n", "\n", "\r") {
+        if (/$nl/) {
+          s/(?:$nl){3,}/$nl$nl/g;
+          last;
+        }
+      }
+    ' ${@+"$@"}
+}
+
+opt=
+while getopts 'h' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift `expr $OPTIND - 1`
+
+if [ $# -eq 0 ]; then
+    do_astyle | rmcbl
+else
+    do_astyle ${@+"$@"}
+    rmcbl_iopt=-i
+    rmcbl ${@+"$@"}
+fi
