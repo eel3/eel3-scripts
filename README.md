@@ -22,6 +22,7 @@ Set up
   * ce(1) : Ruby 2.0.x
   * cew(1) : [Open usp Tukubai](https://github.com/usp-engineers-community/Open-usp-Tukubai "Open usp Tukubai")
   * deadlink(1) : Perl 5
+  * extpcm(1) : Python 2.7
   * funcname(1) : Exuberant Ctags
   * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
   * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
