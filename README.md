@@ -28,6 +28,7 @@ Set up
   * funcname(1) : Exuberant Ctags
   * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
   * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
+  * udprecv(1) : Python 2.7
   * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
   * linux/writeimg(1) : bzcat(1), gunzip(1), lzcat(1), xzcat(1)
 3. Put all scripts and Makefile in a directory registered in PATH.
