@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) Command line tool to dump RIFF WAVE file. Version 1.1.0.20170622
+# @(#) Command line tool to dump RIFF WAVE file. Version 1.1.1.20170622
 
 from __future__ import print_function
 
@@ -12,10 +12,12 @@ import sys
 import wave
 
 
-def format_sample(sample, sampwidth, little_endian):
-    if little_endian:
-        sample = sample[::-1]
+def format_sample_big_endian(sample, sampwidth):
     return ('%02X' * sampwidth) % struct.unpack('%dB' % sampwidth, sample)
+
+
+def format_sample_little_endian(sample, sampwidth):
+    return ('%02X' * sampwidth) % struct.unpack('%dB' % sampwidth, sample[::-1])
 
 
 def dumpwav(wavfile, ostream, opts):
@@ -33,10 +35,15 @@ def dumpwav(wavfile, ostream, opts):
     ostream.write('bytes per frame\t%d\n' % framewidth)
     ostream.write('num of frames\t%d\n' % nframes)
 
+    if opts.little_endian:
+        format_sample = format_sample_little_endian
+    else:
+        format_sample = format_sample_big_endian
+
     frames = wr.readframes(nframes)
     it = (frames[i:i+framewidth] for i in range(0, len(frames), framewidth))
     for fn, frame in enumerate(it):
-        samples = [format_sample(frame[i:i+sampwidth], sampwidth, opts.little_endian)
+        samples = [format_sample(frame[i:i+sampwidth], sampwidth)
                 for i in range(0, framewidth, sampwidth)]
         ostream.write('frame %d\t%s\n' % (fn, '\t'.join(samples)))
 
