@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) UDP receiver for network testing. Version 1.1.1.20170406
+# @(#) UDP receiver for network testing. Version 1.1.2.20180713
 
 from __future__ import print_function
 
@@ -48,7 +48,7 @@ def parse_args():
     DEFAULT_BIND_ADDR = '0.0.0.0'
 
     parser = argparse.ArgumentParser(description=
-            'UDP sender for network testing')
+            'UDP receiver for network testing')
 
     parser.add_argument('-a', '--bind-addr', metavar='addr', nargs='?',
                         const=DEFAULT_BIND_ADDR, default=DEFAULT_BIND_ADDR,
@@ -59,7 +59,7 @@ def parse_args():
     parser.add_argument('-p', '--bind-port', metavar='port', nargs='?', type=int,
                         required=True, help='bind port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.1.1')
+                        version='%(prog)s 1.1.2')
 
     return parser.parse_known_args()
 
