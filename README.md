@@ -31,7 +31,7 @@ Set up
     * udprecv(1) : Python 2.7
     * udpsend(1) : Python 2.7
     * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
-    * linux/writeimg(1) : bzcat(1), gunzip(1), lzcat(1), xzcat(1)
+    * linux/writeimg(1) : bzcat(1), gunzip(1), lzcat(1), unzip(1), xzcat(1)
 2. Put all scripts and Makefile in a directory registered in PATH.
 3. Execute make(1) for creating symlink to environment-dependent scripts.
 
