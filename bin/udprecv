@@ -18,26 +18,22 @@ def udprecv(bind_addr, bind_port, ostream):
                                  socket.SOCK_DGRAM):
         family, socktype, protocol, canonname, sockaddr = ai
         try:
-            sock = socket.socket(family, socktype, protocol)
-        except OSError:
-            continue
-        try:
-            sock.bind(sockaddr)
-        except OSError:
-            sock.close()
-            continue
+            with socket.socket(family, socktype, protocol) as sock:
+                sock.bind(sockaddr)
 
-        print('listening on', sockaddr[0], 'port', sockaddr[1], file=ostream)
-        ostream.flush()
-
-        try:
-            while True:
-                data, addr = sock.recvfrom(65535)
-                print('receive from', addr[0], 'port', addr[1], ':', repr(data),
+                print('listening on', sockaddr[0], 'port', sockaddr[1],
                       file=ostream)
                 ostream.flush()
+
+                while True:
+                    data, addr = sock.recvfrom(65535)
+                    print('receive from', addr[0], 'port', addr[1], ':',
+                          repr(data), file=ostream)
+                    ostream.flush()
+        except OSError:
+            continue
         except KeyboardInterrupt:
-            sock.close()
+            pass
         return
     raise ValueError('could not open socket')
 

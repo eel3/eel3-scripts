@@ -18,11 +18,10 @@ def udpsend(addr, port, msg):
                                  socket.SOCK_DGRAM):
         family, socktype, protocol, canonname, sockaddr = ai
         try:
-            sock = socket.socket(family, socktype, protocol)
+            with socket.socket(family, socktype, protocol) as sock:
+                sock.sendto(msg, sockaddr)
         except OSError:
             continue
-        sock.sendto(msg, sockaddr)
-        sock.close()
         return
     raise ValueError('could not open socket')
 
