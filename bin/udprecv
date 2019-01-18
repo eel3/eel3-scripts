@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) UDP receiver for network testing. Version 2.0.0.20190108
+# @(#) UDP receiver for network testing. Version 2.0.1.20190118
 
 import argparse
 import socket
@@ -19,11 +19,11 @@ def udprecv(bind_addr, bind_port, ostream):
         family, socktype, protocol, canonname, sockaddr = ai
         try:
             sock = socket.socket(family, socktype, protocol)
-        except socket.error:
+        except OSError:
             continue
         try:
             sock.bind(sockaddr)
-        except socket.error:
+        except OSError:
             sock.close()
             continue
 
@@ -57,7 +57,7 @@ def parse_args():
     parser.add_argument('-p', '--bind-port', metavar='port', nargs='?', type=int,
                         required=True, help='bind port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 2.0.0')
+                        version='%(prog)s 2.0.1')
 
     return parser.parse_known_args()
 
