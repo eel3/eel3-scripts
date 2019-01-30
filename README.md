@@ -28,6 +28,7 @@ Set up
     * funcname(1) : Exuberant Ctags
     * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
     * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
+    * tcpechoclient(1) : Python 3.5.3 or higher
     * udprecv(1) : Python 3.5.3 or higher
     * udpsend(1) : Python 3.5.3 or higher
     * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
