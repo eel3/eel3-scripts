@@ -11,7 +11,7 @@ CC0 1.0 Universal.
 Target environments
 -------------------
 
-Cygwin, Linux, Mac OS X.
+Cygwin, Linux, macOS.
 
 Probably all scripts work on other Unix-like environment.
 
@@ -28,8 +28,8 @@ Set up
     * funcname(1) : Exuberant Ctags
     * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
     * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
-    * udprecv(1) : Python 3.6 or higher
-    * udpsend(1) : Python 3.6 or higher
+    * udprecv(1) : Python 3.5.3 or higher
+    * udpsend(1) : Python 3.5.3 or higher
     * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
     * linux/writeimg(1) : bzcat(1), gunzip(1), lzcat(1), unzip(1), xzcat(1)
 2. Put all scripts and Makefile in a directory registered in PATH.
@@ -38,7 +38,7 @@ Set up
 | Environment             | target of make |
 |:------------------------|:---------------|
 | Linux                   | linux          |
-| Mac OS X                | mac            |
+| macOS                   | mac            |
 | Raspbian (Raspberry Pi) | raspbian       |
 
 Usage
