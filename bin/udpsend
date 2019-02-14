@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.2.0.20190214
+# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.2.1.20190214
 
 import argparse
 import ipaddress
@@ -58,15 +58,15 @@ def parse_args():
 
     parser.add_argument('messages', metavar='message', nargs='*',
                         help='messages to send')
-    parser.add_argument('-a', '--addr', metavar='addr', nargs='?',
+    parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
                         required=True, help='target address')
-    parser.add_argument('-m', '--multicast-if', metavar='multicast_if', nargs='?',
+    parser.add_argument('-m', '--multicast-if', metavar='multicast_if', nargs=1,
                         help=('the outgoing network interface for sending multicast traffic'
                               ' (IPv4: IP address, IPv6: index number)'))
-    parser.add_argument('-p', '--port', metavar='port', nargs='?', type=int,
+    parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 2.2.0')
+                        version='%(prog)s 2.2.1')
 
     return parser.parse_known_args()
 
@@ -74,18 +74,10 @@ def parse_args():
 def main():
     args = parse_args()
 
-    addr = args[0].addr
-    mcif = args[0].multicast_if
-    port = args[0].port
+    addr = args[0].addr[0]
+    mcif = args[0].multicast_if[0] if args[0].multicast_if else None
+    port = args[0].port[0]
     msgs = args[0].messages
-
-    if addr is None:
-        eprint('error: need target address')
-        sys.exit(1)
-
-    if port is None:
-        eprint('error: need target port')
-        sys.exit(1)
 
     retval = 0
 
