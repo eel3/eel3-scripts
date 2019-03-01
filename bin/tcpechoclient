@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
-# @(#) TCP echo client for network testing. Version 1.0.0.20190130
+# @(#) TCP echo client for network testing. Version 1.0.1.20190221
 
 import argparse
 import socket
@@ -31,18 +31,18 @@ def parse_args():
 
     parser.add_argument('messages', metavar='message', nargs='*',
                         help='messages to send')
-    parser.add_argument('-a', '--addr', metavar='addr', nargs='?',
+    parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
                         required=True, help='target address')
-    parser.add_argument('-o', '--output', metavar='file', nargs='?',
-                        type=argparse.FileType('w'), const=sys.stdout,
-                        default=sys.stdout, help='place output in file')
-    parser.add_argument('-p', '--port', metavar='port', nargs='?', type=int,
+    parser.add_argument('-o', '--output', metavar='file', nargs=1,
+                        type=argparse.FileType('w'), default=[sys.stdout],
+                        help='place output in file')
+    parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
-    parser.add_argument('-t', '--timeout', metavar='timeout', nargs='?', type=float,
-                        const=DEFAULT_TIMEOUT_SEC, default=DEFAULT_TIMEOUT_SEC,
+    parser.add_argument('-t', '--timeout', metavar='timeout', nargs=1, type=float,
+                        default=[DEFAULT_TIMEOUT_SEC],
                         help='connection timeout in seconds')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.0')
+                        version='%(prog)s 1.0.1')
 
     return parser.parse_known_args()
 
@@ -50,18 +50,10 @@ def parse_args():
 def main():
     args = parse_args()
 
-    addr = args[0].addr
-    port = args[0].port
+    addr = args[0].addr[0]
+    port = args[0].port[0]
     msgs = args[0].messages
-    timeout = args[0].timeout
-
-    if addr is None:
-        eprint('error: need target address')
-        sys.exit(1)
-
-    if port is None:
-        eprint('error: need target port')
-        sys.exit(1)
+    timeout = args[0].timeout[0]
 
     if timeout < MIN_TIMEOUT_SEC:
         timeout = MIN_TIMEOUT_SEC
@@ -71,7 +63,7 @@ def main():
     if len(msgs) > 0:
         try:
             tcp_echo_client(addr, port, '\n'.join(msgs).encode(), timeout,
-                            args[0].output)
+                            args[0].output[0])
         except Exception as e:
             eprint(e)
             retval = 1
