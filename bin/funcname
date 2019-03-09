@@ -1,7 +1,7 @@
 #!/bin/sh
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) Pick up all function name from source code. Version 1.1.2.20190310
+# @(#) Pick up all function name from source code. Version 1.2.0.20190310
 # need Exuberant Ctags
 
 set -u
@@ -10,19 +10,27 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
+readonly version=1.2.0
 
 # usage <exit-code>
 usage() {
-    echo "usage: $progname [-h] [file ...]" 1>&2
+    echo "usage: $progname [-hv] [file ...]" 1>&2
     exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
 }
 
 # main routine
 
 opt=
-while getopts 'h' opt; do
+while getopts 'hv' opt; do
     case $opt in
     h)      usage 0 ;;
+    v)      version ;;
     \?)     usage 1 ;;
     esac
 done
