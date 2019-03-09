@@ -1,13 +1,23 @@
 #!/bin/sh
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) Pick up all function name from source code. Version 1.1.1.20190310
+# @(#) Pick up all function name from source code. Version 1.1.2.20190310
 # need Exuberant Ctags
 
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+
+# usage <exit-code>
 usage() {
-    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    echo "usage: $progname [-h] [file ...]" 1>&2
     exit $1
 }
+
+# main routine
 
 opt=
 while getopts 'h' opt; do
@@ -16,7 +26,7 @@ while getopts 'h' opt; do
     \?)     usage 1 ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 exec ctags --sort=no --fields=K -f - ${@+"$@"} | tr -d \\r | awk '
 BEGIN {
