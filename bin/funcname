@@ -1,5 +1,5 @@
 #!/bin/sh
-# @(#) Pick up all function name from source code. Version 1.1.0.20140708
+# @(#) Pick up all function name from source code. Version 1.1.1.20190310
 # need Exuberant Ctags
 
 usage() {
@@ -16,7 +16,7 @@ while getopts 'h' opt; do
 done
 shift `expr $OPTIND - 1`
 
-exec ctags --sort=no --fields=K -f - ${@+"$@"} | awk '
+exec ctags --sort=no --fields=K -f - ${@+"$@"} | tr -d \\r | awk '
 BEGIN {
     FS = "\t"
 
