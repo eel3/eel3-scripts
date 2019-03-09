@@ -1,4 +1,6 @@
 #!/bin/sh
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
 # @(#) Pick up all function name from source code. Version 1.1.1.20190310
 # need Exuberant Ctags
 
