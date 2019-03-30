@@ -1,0 +1,74 @@
+#!/bin/sh
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Generate dummy files. Version 1.0.0.20190327
+
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+readonly version=1.0.0
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-s size] [-t <random|zero>] [file ...]" 1>&2
+    exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# error <message>
+error() {
+    echo "$progname:" "$@" 1>&2
+    exit 1
+}
+
+# isnumber <value>
+isnumber () {
+    [ "$1" -eq 0 ] 2>/dev/null
+    [ $? -lt 2 ]
+}
+
+# main routine
+
+size=0
+type=zero
+devfile=
+
+opt=
+while getopts 'hs:t:v' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    s)      size=$OPTARG ;;
+    t)      type=$OPTARG ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+isnumber "$size"  || error "-s \"$size\": not number"
+[ "$size" -ge 0 ] || error "-s \"$size\": must be greater or equal to 0"
+
+case $type in
+random) devfile=/dev/urandom ;;
+zero)   devfile=/dev/zero ;;
+*)      error "-t \"$type\": unknown argument" ;;
+esac
+
+[ $# != 0 ] || usage 1
+
+if [ "$size" -eq 0 ]; then
+    touch ${@+"$@"}
+else
+    for i; do
+        dd "if=$devfile" "of=$i" "bs=$size" count=1 2>/dev/null
+    done
+fi
