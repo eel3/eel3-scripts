@@ -1,23 +1,27 @@
 #!/bin/sh
-# encoding: utf-8
 # -*- coding: utf-8 -*-
 # vim:fileencoding=UTF-8
 # @(#) Command line tool to write disk image file to usb device (on Linux).
 
 set -u
 umask 0022
-IFS=`printf ' \t\n_'`; IFS=${IFS%_}
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
-export IFS LANG=C LC_ALL=C PATH
+export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=`basename "$0"`
+readonly progname=${0##*/}
+readonly version=1.1.1.20190405
 
-# usage <status>
+# usage <exit-code>
 usage() {
     cat <<- EOT
 		usage: $progname [options] <image file> <device file>
 		    -d <bzip2|gzip|lzma|xz|zip>
 		      Decompress the compressed image file and write it.
+		    -h
+		      Show this help message and exit.
+		    -v
+		      Show program's version number and exit.
 	EOT
     exit $1
 }
@@ -32,9 +36,9 @@ usage_on_ng() {
     usage 1 1>&2
 }
 
-# version (nop)
+# version (no parameter)
 version() {
-    echo "$progname 1.1.0.20180723"
+    echo "$progname $version"
     exit 0
 }
 
@@ -55,6 +59,8 @@ error_with_usage() {
     usage_on_ng
 }
 
+# main routine
+
 readcmd=cat
 
 opt=
@@ -74,7 +80,7 @@ while getopts 'd:hv' opt; do
     \?)     usage_on_ng ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 [ $# -eq 2 ] || error_with_usage 'Need 2 arguments'
 
