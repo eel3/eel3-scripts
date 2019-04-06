@@ -1,17 +1,28 @@
 #!/bin/sh
-# @(#) My source code formatter. Version 1.0.2.20151203
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) My source code formatter.
 # need astyle (Artistic Style), Perl 5
 
 set -u
 umask 0022
-IFS=`printf ' \t\n_'`; IFS=${IFS%_}
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
-# usage <status>
+readonly progname=${0##*/}
+readonly version=1.1.0.20190405
+
+# usage <exit-code>
 usage() {
-    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    echo "usage: $progname [-hv] [file ...]" 1>&2
     exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
 }
 
 # do_astyle [file ...]
@@ -50,14 +61,17 @@ rmcbl() {
     ' ${@+"$@"}
 }
 
+# main routine
+
 opt=
-while getopts 'h' opt; do
+while getopts 'hv' opt; do
     case $opt in
     h)      usage 0 ;;
+    v)      version ;;
     \?)     usage 1 ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 if [ $# -eq 0 ]; then
     do_astyle | rmcbl
