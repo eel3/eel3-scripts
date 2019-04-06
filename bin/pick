@@ -33,7 +33,7 @@ do_pick() {
     echo -n "$header$1$footer" >/dev/tty
     read response
     case $response in
-    [Yy]|[Yy]es|YES)      echo "$i" ;;
+    [Yy]|[Yy]es|YES)      echo "$1" ;;
     [Qq]|[Qq]uit|QUIT)    break ;;
     esac
 }
