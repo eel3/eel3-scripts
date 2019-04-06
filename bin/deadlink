@@ -1,5 +1,7 @@
 #!/bin/sh
-# @(#) Select dead symlinks from arguments. Version 3.2.0.20140708
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Select dead symlinks from arguments.
 # need Perl 5
 #
 # bug:
@@ -9,27 +11,42 @@
 #   ----
 #   In above case, this script assumes that file xxxx is deadlink.
 
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin:/usr/local/bin
+export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=`basename "$0"`
+readonly progname=${0##*/}
+readonly version=3.3.0.20190405
 
+# usage <exit-code>
 usage() {
     cat <<- EOT 1>&2
-		usage: $progname -h
+		usage: $progname [-hv]
 		       $progname [file ...]
 		       $progname - <filelist
 	EOT
     exit $1
 }
 
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# main routine
+
 opt=
-while getopts 'h' opt; do
+while getopts 'hv' opt; do
     case $opt in
     h)      usage 0 ;;
+    v)      version ;;
     \?)     usage 1 ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 if [ $# -eq 1 -a "$1" = '-' ]; then
     perl -n -e 'chomp; -l $_ && ! -e $_ && print "$_\n";'
