@@ -11,7 +11,7 @@ PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=3.1.0.20190405
+readonly version=3.1.1.20190407
 
 # usage <exit-code>
 usage() {
@@ -34,7 +34,7 @@ do_pick() {
     read response
     case $response in
     [Yy]|[Yy]es|YES)      echo "$1" ;;
-    [Qq]|[Qq]uit|QUIT)    break ;;
+    [Qq]|[Qq]uit|QUIT)    exit ;;
     esac
 }
 
