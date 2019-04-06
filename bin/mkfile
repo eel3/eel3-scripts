@@ -1,7 +1,7 @@
 #!/bin/sh
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) Generate dummy files. Version 1.0.0.20190327
+# @(#) Generate dummy files.
 
 set -u
 umask 0022
@@ -10,7 +10,7 @@ PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=1.0.0
+readonly version=1.0.1.20190405
 
 # usage <exit-code>
 usage() {
@@ -26,7 +26,7 @@ version() {
 
 # error <message>
 error() {
-    echo "$progname:" "$@" 1>&2
+    echo "$progname:" ${@+"$@"} 1>&2
     exit 1
 }
 
