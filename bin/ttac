@@ -1,18 +1,39 @@
 #!/bin/sh
-# @(#) Substitutes for tac(1) or `tail -q -r`. Version 1.1.0.20140708
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Substitutes for tac(1) or `tail -q -r`.
 
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+readonly version=1.2.0.20190405
+
+# usage <exit-code>
 usage() {
-    echo "usage: `basename "$0"` [-h] [file ...]" 1>&2
+    echo "usage: $progname [-hv] [file ...]" 1>&2
     exit $1
 }
 
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# main routine
+
 opt=
-while getopts 'h' opt; do
+while getopts 'hv' opt; do
     case $opt in
     h)      usage 0 ;;
+    v)      version ;;
     \?)     usage 1 ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 exec sed '1!G;h;$!d' ${@+"$@"}
