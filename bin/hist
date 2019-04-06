@@ -1,9 +1,28 @@
 #!/bin/sh
-# @(#) Generate histogram from text like seq(1). Version 1.0.0.20131002
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Generate histogram from text like seq(1).
 
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin:/usr/local/bin
+export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=`basename "$0"`
+readonly progname=${0##*/}
+readonly version=1.1.0.20190405
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-c <class-witch>] [-r] [-s <start-number|min>] [file ...]" 1>&2
+    exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
 
 # my_tac [file ...]
 # substitutes for tac(1) or `tail -r`
@@ -19,7 +38,7 @@ isnumber () {
 
 # error <message>
 error() {
-    echo "$progname:" "$@" 1>&2
+    echo "$progname:" ${@+"$@"} 1>&2
     exit 1
 }
 
@@ -29,18 +48,14 @@ do_exit() {
     exit $1
 }
 
-# usage <status>
-usage() {
-    echo "usage: $progname [-c <class-witch>] [-h] [-r] [-s <start-number|min>] [file ...]" 1>&2
-    exit $1
-}
+# main routine
 
 class_width=10
 catcmd=cat
 start_number=0
 
 opt=
-while getopts 'c:hrs:' opt; do
+while getopts 'c:hrs:v' opt; do
     case $opt in
     c)      class_width=$OPTARG
             isnumber "$class_width" || \
@@ -56,21 +71,23 @@ while getopts 'c:hrs:' opt; do
             [ "$start_number" = min ] || isnumber "$start_number" || \
                 error "-s \"$start_number\": Not number"
             ;;
+    v)      version
+            ;;
     \?)     usage 1
             ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 trap 'rm -f "$tmpfile"; exit 1' 1 2 15
 
-tmpfile=`mktemp "$progname.$$.XXXXXXXXXX"`
+tmpfile=$(mktemp "$progname.$$.XXXXXXXXXX")
 [ $? -eq 0 ] || error "cannot create temporary file"
 
-nsamples=`sed '/^[    ]*$/d' ${@+"$@"} | sort -n | tee "$tmpfile" | wc -l`
+nsamples=$(sed '/^[    ]*$/d' ${@+"$@"} | sort -n | tee "$tmpfile" | wc -l)
 [ "$nsamples" -ge 1 ] || do_exit 0
 
-[ "$start_number" = min ] && start_number=`head -1 "$tmpfile"`
+[ "$start_number" = min ] && start_number=$(head -n 1 "$tmpfile")
 
 awk -v "class_width=$class_width" \
     -v "nsamples=$nsamples" \
