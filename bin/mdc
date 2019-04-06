@@ -1,31 +1,52 @@
 #!/bin/sh
-# @(#) Convert Markdown to HTML. Version 1.0.1.20150303
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Convert Markdown to HTML.
 # need Node.js, marked
 
-readonly highlight_url=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/
-readonly copyright_name=eel3
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+export IFS LC_ALL=C LANG=C
 
+readonly progname=${0##*/}
+readonly version=1.1.0.20190405
+
+# usage <exit-code>
 usage() {
     cat <<-EOF 1>&2
-		usage: `basename "$0"` [-h] [-cg] [-o output-file] [-r year-and-name] [input-file]
+		usage: $progname [-hv] [-cg] [-o output-file] [-r year-and-name] [input-file]
 		option:
 		    -c  Enable code syntax highlight (using highlight.js).
 		    -g  Add header with generated time.
-		    -h  Show this text and exit.
+		    -h  Show this help message and exit.
 		    -o  Specify file output. If none is specified, write to stdout.
 		    -r  Add footer with copyright. Use argument as a template for copyright.
 		        If the length of argument is zero, apply default template.
+		    -v  Show program's version number and exit.
 	EOF
     exit $1
 }
 
-opt=
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# main routine
+
+readonly highlight_url=https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/
+readonly copyright_name=eel3
+
 color=false
 gentime=false
 output=
 copyright=false
-copyright_body="`date '+%Y'` $copyright_name."
-while getopts 'cgho:r:' opt; do
+copyright_body="$(date '+%Y') $copyright_name."
+
+opt=
+while getopts 'cgho:r:v' opt; do
     case $opt in
     c)      color=true ;;
     g)      gentime=true ;;
@@ -33,10 +54,11 @@ while getopts 'cgho:r:' opt; do
     o)      output=$OPTARG ;;
     r)      copyright=true
             [ -n "$OPTARG" ] && copyright_body=$OPTARG ;;
+    v)      version ;;
     \?)     usage 1 ;;
     esac
 done
-shift `expr $OPTIND - 1`
+shift $(($OPTIND - 1))
 
 [ $# -le 1 ] || usage 1
 
@@ -112,7 +134,7 @@ EOF
 if $gentime; then
     cat <<EOF
 <header>
-<p>Generated: `LANG=C date -u '+%a, %d %b %Y %T GMT'`</p>
+<p>Generated: $(date -u '+%a, %d %b %Y %T GMT')</p>
 </header>
 EOF
 fi
