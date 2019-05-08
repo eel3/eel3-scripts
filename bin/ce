@@ -1,5 +1,7 @@
 #!/usr/bin/env ruby
-# vim:fileencoding=UTF-8
+# encoding: utf-8
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
 # @(#) Print character code point. Version 1.0.0.20150213
 
 require "kconv"
