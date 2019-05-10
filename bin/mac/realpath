@@ -10,7 +10,7 @@ PATH=/bin:/usr/bin:/usr/local/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=1.1.0.20190508
+readonly version=1.1.1.20190509
 
 # usage <exit-code>
 usage() {
@@ -49,7 +49,8 @@ shift $(($OPTIND - 1))
 rp=$(readlink "$1")
 if [ -z "$rp" ]; then
     cd $(dirname "$1")
-    echo $(pwd)/$(basename "$1")
+    echo "$(pwd)/$(basename "$1")"
 else
+    expr "$rp" : '^/' >/dev/null || rp="$(dirname "$1")/$rp"
     exec "$0" "$rp"
 fi
