@@ -1,36 +1,55 @@
 #!/bin/sh
-# @(#) Substitutes for realpath(1). Version 1.0.0.20140625
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Substitutes for realpath(1).
 
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin:/usr/local/bin
+export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=`basename "$0"`
+readonly progname=${0##*/}
+readonly version=1.1.0.20190508
 
-# error [message ...]
-error() {
-    echo ${@+"$@"} 2>&1
-}
-
-# usage <status>
+# usage <exit-code>
 usage() {
-    error "usage: $progname [-h] [--help] <file>"
+    echo "usage: $progname [-hv] <file>" 1>&2
     exit $1
 }
 
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# error <message>
+error() {
+    echo "$progname:" ${@+"$@"} 1>&2
+    exit 1
+}
+
+# main routine
+
+opt=
+while getopts 'hv' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
 [ $# = 1 ] || usage 1
 
-case "$1" in
--h|--help)  usage 0 ;;
-esac
+[ -e "$1" ] || error "$1: no such file or directory"
 
-if [ ! -e "$1" ]; then
-    error "$1: no such file or directory"
-    exit 1
-fi
-
-rp=`readlink "$1"`
+rp=$(readlink "$1")
 if [ -z "$rp" ]; then
-    cd `dirname "$1"`
-    echo `pwd`/`basename "$1"`
+    cd $(dirname "$1")
+    echo $(pwd)/$(basename "$1")
 else
     exec "$0" "$rp"
 fi
