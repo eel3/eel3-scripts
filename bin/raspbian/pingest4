@@ -1,18 +1,67 @@
 #!/bin/sh
-# @(#) ping(8) to all local IPv4 address. Version 2.0.0
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) ping(8) to all local IPv4 address.
+
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/sbin:/usr/bin:/usr/sbin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+readonly version=2.1.0.20190509
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-o output]" 1>&2
+    exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# error <message>
+error() {
+    echo "$progname:" ${@+"$@"} 1>&2
+    exit 1
+}
+
+# main routine
+
+output=
+
+opt=
+while getopts 'ho:v' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    o)      output=$OPTARG ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+if [ -n "$output" -a "$output" != - ]; then
+    { exec >"$output"; } 2>/dev/null
+    [ $? -eq 0 ] || error "$output: cannot open"
+fi
 
 readonly addrbase=192.168.24.
 
 # ping(8) with option:
 # for Linux, NetBSD, OpenBSD
 readonly pingcmd='ping -c 1 -w 1'
-# for FreeBSD, Mac OS X
+# for FreeBSD, macOS
 #readonly pingcmd='ping -c 1 -t 1'
 
 # sort(1) with option:
 # for GNU coreutils
 readonly sortcmd='sort -V'
-# for others
+# for other environments
 #readonly sortcmd='sort -t . -k 4 -n'
 
 # do_ping <IP address>
@@ -22,7 +71,7 @@ do_ping () {
 }
 
 {
-    for i in `seq 1 254`; do
+    for i in $(seq 1 254); do
         do_ping $addrbase$i &
     done
     wait
