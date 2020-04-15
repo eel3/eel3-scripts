@@ -26,12 +26,12 @@ version() {
 
 # my_tac [file ...]
 # substitutes for tac(1) or `tail -r`
-my_tac () {
+my_tac() {
     sed '1!G;h;$!d' ${@+"$@"}
 }
 
 # isnumber <value>
-isnumber () {
+isnumber() {
     [ "$1" -eq 0 ] 2>/dev/null
     [ $? -lt 2 ]
 }
