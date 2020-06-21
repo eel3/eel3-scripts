@@ -1,0 +1,43 @@
+#!/bin/sh
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) A pause command for Unix-like envrinments.
+
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+readonly version=1.0.0.20200621
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-p prompt]" 1>&2
+    exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# main routine
+
+prompt='Press any key to continue . . . '
+
+opt=
+while getopts 'hp:v' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    p)      prompt=$OPTARG ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+printf %s "$prompt" >/dev/tty
+read
