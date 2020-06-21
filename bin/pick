@@ -51,7 +51,7 @@ while getopts 'f:h:v' opt; do
 done
 shift $(($OPTIND - 1))
 
-if [ $# -eq 1 -a "$1" = '-' ]; then
+if [ $# -eq 1 -a "${1-}" = '-' ]; then
     # Trims IFS character from the beginning and end of the $i.
     while read i; do
         do_pick "$i" </dev/tty
