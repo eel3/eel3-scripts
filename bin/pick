@@ -11,7 +11,7 @@ PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=3.1.1.20190407
+readonly version=3.1.2.20200619
 
 # usage <exit-code>
 usage() {
@@ -30,9 +30,9 @@ footer='? [Yes|No|Quit]: '
 
 # do_pick <item>
 do_pick() {
-    echo -n "$header$1$footer" >/dev/tty
+    printf %s%s%s "$header" "$1" "$footer" >/dev/tty
     read response
-    case $response in
+    case "$response" in
     [Yy]|[Yy]es|YES)      echo "$1" ;;
     [Qq]|[Qq]uit|QUIT)    exit ;;
     esac
@@ -43,8 +43,8 @@ do_pick() {
 opt=
 while getopts 'f:h:v' opt; do
     case $opt in
-    f)      footer="$OPTARG" ;;
-    h)      header="$OPTARG" ;;
+    f)      footer=$OPTARG ;;
+    h)      header=$OPTARG ;;
     v)      version ;;
     \?)     usage 1 ;;
     esac
