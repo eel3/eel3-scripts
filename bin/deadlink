@@ -18,7 +18,7 @@ PATH=/bin:/usr/bin:/usr/local/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=3.3.0.20190405
+readonly version=3.3.1.20200621
 
 # usage <exit-code>
 usage() {
@@ -48,7 +48,7 @@ while getopts 'hv' opt; do
 done
 shift $(($OPTIND - 1))
 
-if [ $# -eq 1 -a "$1" = '-' ]; then
+if [ $# -eq 1 -a "${1-}" = '-' ]; then
     perl -n -e 'chomp; -l $_ && ! -e $_ && print "$_\n";'
 else
     for i; do
