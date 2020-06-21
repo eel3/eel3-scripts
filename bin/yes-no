@@ -1,0 +1,53 @@
+#!/bin/sh
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Yes or No.
+
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname=${0##*/}
+readonly version=1.0.0.20200621
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-u unexpected-input-error] <prompt>" 1>&2
+    exit $1
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# main routine
+
+unexpected='Please answer yes or no.'
+
+opt=
+while getopts 'hu:v' opt; do
+    case $opt in
+    h)      usage 0 ;;
+    u)      unexpected=$OPTARG ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $(($OPTIND - 1))
+
+[ $# != 0 ] || usage 1
+prompt=${@+"$@"}
+
+while : ; do
+    printf '%s (Yes/No): ' "$prompt" >/dev/tty
+    read response
+    case "$response" in
+    [Yy]|[Yy]es|YES)    exit 0 ;;
+    [Nn]|[Nn]o|NO)      exit 1 ;;
+    *)                  echo "$unexpected" ;;
+    esac
+done
