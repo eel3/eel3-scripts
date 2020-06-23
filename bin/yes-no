@@ -10,7 +10,7 @@ PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname=${0##*/}
-readonly version=1.0.0.20200621
+readonly version=1.0.1.20200623
 
 # usage <exit-code>
 usage() {
@@ -40,7 +40,7 @@ done
 shift $(($OPTIND - 1))
 
 [ $# != 0 ] || usage 1
-prompt=${@+"$@"}
+readonly prompt=${@+"$@"}
 
 while : ; do
     printf '%s (Yes/No): ' "$prompt" >/dev/tty
