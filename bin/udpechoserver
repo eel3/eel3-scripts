@@ -1,0 +1,74 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) UDP unicast echo server for network testing. Version 1.0.0.20201016
+
+import argparse
+import socket
+import sys
+
+
+def eprint(*args, **keywords):
+    print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
+
+
+def udprecv(bind_addr, bind_port, ostream):
+    for ai in socket.getaddrinfo(bind_addr, bind_port, socket.AF_UNSPEC,
+                                 socket.SOCK_DGRAM):
+        family, socktype, protocol, canonname, sockaddr = ai
+        try:
+            with socket.socket(family, socktype, protocol) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+                sock.bind(sockaddr)
+
+                print('listening on', sockaddr[0], 'port', sockaddr[1],
+                      file=ostream)
+                ostream.flush()
+
+                while True:
+                    data, addr = sock.recvfrom(65535)
+                    print('receive from', addr[0], 'port', addr[1], ':',
+                          repr(data), file=ostream)
+                    ostream.flush()
+                    sock.sendto(data, addr)
+        except OSError:
+            continue
+        except KeyboardInterrupt:
+            pass
+        return
+    raise ValueError('could not open socket')
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=
+            'UDP unicast echo server for network testing')
+
+    parser.add_argument('-a', '--bind-addr', metavar='addr', nargs=1,
+                        default=['0.0.0.0'], help='bind address')
+    parser.add_argument('-o', '--output', metavar='file', nargs=1,
+                        type=argparse.FileType('w'), default=[sys.stdout],
+                        help='place output in file')
+    parser.add_argument('-p', '--bind-port', metavar='port', nargs=1, type=int,
+                        required=True, help='bind port')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 1.0.0')
+
+    return parser.parse_known_args()
+
+
+def main():
+    args = parse_args()
+
+    retval = 0
+
+    try:
+        udprecv(args[0].bind_addr[0], args[0].bind_port[0], args[0].output[0])
+    except Exception as e:
+        eprint(e)
+        retval = 1
+
+    sys.exit(retval)
+
+if __name__ == '__main__':
+    main()

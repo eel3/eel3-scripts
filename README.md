@@ -32,6 +32,7 @@ Set up
     * tcpechoclient(1) : Python 3.5.3 or higher
     * tcpechoserver(1) : Python 3.5.3 or higher
     * udpechoclient(1) : Python 3.6.9 or higher
+    * udpechoserver(1) : Python 3.6.9 or higher
     * udprecv(1) : Python 3.5.3 or higher
     * udpsend(1) : Python 3.5.3 or higher
     * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
