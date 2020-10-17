@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) UDP unicast echo client for network testing. Version 1.0.0.20201016
+
+import argparse
+import socket
+import sys
+
+
+def eprint(*args, **keywords):
+    print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
+
+
+def udpsend(addr, port, msg, ostream):
+    for ai in socket.getaddrinfo(addr, port, socket.AF_UNSPEC,
+                                 socket.SOCK_DGRAM):
+        family, socktype, protocol, canonname, sockaddr = ai
+        try:
+            with socket.socket(family, socktype, protocol) as sock:
+                sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+                print('send to', sockaddr[0], 'port', sockaddr[1], ':',
+                      repr(msg), file=ostream)
+                sock.sendto(msg, sockaddr)
+
+                while True:
+                    data, addr_from = sock.recvfrom(65535)
+                    if addr_from != sockaddr:
+                        continue
+                    print('receive from', addr_from[0], 'port', addr_from[1],
+                          ':', repr(data), file=ostream)
+                    ostream.flush()
+                    break
+        except OSError:
+            continue
+        except KeyboardInterrupt:
+            pass
+        return
+    raise ValueError('could not open socket or send packet')
+
+
+def parse_args():
+    parser = argparse.ArgumentParser(description=
+            'UDP unicast echo client for network testing')
+
+    parser.add_argument('messages', metavar='message', nargs='*',
+                        help='messages to send')
+    parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
+                        required=True, help='target address')
+    parser.add_argument('-o', '--output', metavar='file', nargs=1,
+                        type=argparse.FileType('w'), default=[sys.stdout],
+                        help='place output in file')
+    parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
+                        required=True, help='target port')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 1.0.0')
+
+    return parser.parse_known_args()
+
+
+def main():
+    args = parse_args()
+
+    msgs = args[0].messages
+
+    retval = 0
+
+    if len(msgs) > 0:
+        try:
+            udpsend(args[0].addr[0], args[0].port[0], '\n'.join(msgs).encode(),
+                    args[0].output[0])
+        except Exception as e:
+            eprint(e)
+            retval = 1
+
+    sys.exit(retval)
+
+if __name__ == '__main__':
+    main()
