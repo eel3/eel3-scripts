@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) TCP echo server for network testing. Version 1.0.1.20190221
+# @(#) TCP echo server for network testing. Version 1.0.2.20220415
 
 import argparse
 import socket
@@ -23,12 +23,18 @@ def tcp_echo_server(bind_addr, bind_port, ostream):
                 sock.bind(sockaddr)
                 sock.listen()
 
+                # Workaround to handle keyboard interrupt on Windows.
+                sock.settimeout(0.05)
+
                 print('listening on', sockaddr[0], 'port', sockaddr[1],
                       file=ostream)
                 ostream.flush()
 
                 while True:
-                    client, addr = sock.accept()
+                    try:
+                        client, addr = sock.accept()
+                    except socket.timeout:
+                        continue
                     with client:
                         data = client.recv(65535)
                         print('receive from', addr[0], 'port', addr[1], ':',
@@ -55,7 +61,7 @@ def parse_args():
     parser.add_argument('-p', '--bind-port', metavar='port', nargs=1, type=int,
                         required=True, help='bind port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.1')
+                        version='%(prog)s 1.0.2')
 
     return parser.parse_known_args()
 
