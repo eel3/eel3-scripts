@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast echo server for network testing. Version 1.0.1.20220415
+# @(#) UDP unicast echo server for network testing. Version 1.0.2.20220416
 
 import argparse
 import socket
@@ -32,12 +32,12 @@ def udprecv(bind_addr, bind_port, ostream):
                 while True:
                     try:
                         data, addr = sock.recvfrom(65535)
-                    except socket.timeout:
+                        print('receive from', addr[0], 'port', addr[1], ':',
+                              repr(data), file=ostream)
+                        ostream.flush()
+                        sock.sendto(data, addr)
+                    except OSError:
                         continue
-                    print('receive from', addr[0], 'port', addr[1], ':',
-                          repr(data), file=ostream)
-                    ostream.flush()
-                    sock.sendto(data, addr)
         except OSError:
             continue
         except KeyboardInterrupt:
@@ -58,7 +58,7 @@ def parse_args():
     parser.add_argument('-p', '--bind-port', metavar='port', nargs=1, type=int,
                         required=True, help='bind port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.1')
+                        version='%(prog)s 1.0.2')
 
     return parser.parse_known_args()
 
