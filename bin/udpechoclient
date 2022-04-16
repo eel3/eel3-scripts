@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast echo client for network testing. Version 1.0.0.20201016
+# @(#) UDP unicast echo client for network testing. Version 1.0.1.20220415
 
 import argparse
 import socket
@@ -24,8 +24,14 @@ def udpsend(addr, port, msg, ostream):
                       repr(msg), file=ostream)
                 sock.sendto(msg, sockaddr)
 
+                # Workaround to handle keyboard interrupt on Windows.
+                sock.settimeout(0.05)
+
                 while True:
-                    data, addr_from = sock.recvfrom(65535)
+                    try:
+                        data, addr_from = sock.recvfrom(65535)
+                    except socket.timeout:
+                        continue
                     if addr_from != sockaddr:
                         continue
                     print('receive from', addr_from[0], 'port', addr_from[1],
@@ -54,7 +60,7 @@ def parse_args():
     parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.0')
+                        version='%(prog)s 1.0.1')
 
     return parser.parse_known_args()
 
