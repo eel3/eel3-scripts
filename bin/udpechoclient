@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast echo client for network testing. Version 1.0.1.20220417
+# @(#) UDP unicast echo client for network testing. Version 1.0.2.20220417
 
 import argparse
 import socket
@@ -16,7 +16,7 @@ def eprint(*args, **keywords):
 def udpechoclient(addr, port, msg, ostream):
     for ai in socket.getaddrinfo(addr, port, socket.AF_UNSPEC,
                                  socket.SOCK_DGRAM):
-        family, socktype, protocol, canonname, sockaddr = ai
+        family, socktype, protocol, _, sockaddr = ai
         try:
             with socket.socket(family, socktype, protocol) as sock:
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
@@ -60,7 +60,7 @@ def parse_args():
     parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.1')
+                        version='%(prog)s 1.0.2')
 
     return parser.parse_known_args()
 
@@ -81,6 +81,7 @@ def main():
             retval = 1
 
     sys.exit(retval)
+
 
 if __name__ == '__main__':
     main()
