@@ -3,6 +3,16 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) Command line tool to extract PCM data from multiple RIFF WAVE files. Version 1.0.1.20220417
+"""Command line tool to extract PCM data from multiple RIFF WAVE files.
+
+Example:
+    $ ls
+    sample_1.wav  sample_2.wav
+    $ extpcms -o sample_1.bin sample_2.bin -- sample_1.wav sample_2.wav
+    $ ls
+    sample_1.bin  sample_1.wav  sample_2.bin  sample_2.wav
+    $ _
+"""
 
 import argparse
 import sys
@@ -10,16 +20,33 @@ import wave
 
 
 def eprint(*args, **keywords):
+    """Wrapper function of print() (for error messages).
+
+    Args:
+        *args (tuple): Variable length argument list.
+        **keywords (dict[str, Any]): Arbitrary keyword arguments.
+    """
     print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
 
 
 def extpcm(wavfile, ostream):
+    """Extract PCM data from RIFF WAVE file.
+
+    Args:
+        wavfile (str): Target file name.
+        ostream (BinaryIO): Output binary IO stream.
+    """
     wr = wave.open(wavfile, 'rb')
     ostream.write(wr.readframes(wr.getnframes()))
     wr.close()
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'Command line tool to extract PCM data from multiple RIFF WAVE files.')
 
@@ -34,6 +61,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
     retval = 0
 
