@@ -3,6 +3,28 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.2.2.20220417
+"""UDP unicast / broadcast / multicast sender for network testing.
+
+Example:
+    # Send message 'hello unicast' to 127.0.0.1:41214.
+    udpsend -a 127.0.0.1 -p 41214 'hello unicast'
+
+    # You can specify a IPv6 address.
+    udpsend -a ::1 -p 41214 'hello IPv6'
+
+    # You can specify a FQDN.
+    udpsend -a echo.example.org -p 41214 'hello FQDN'
+
+    # You can send a broadcast packet.
+    udpsend -a 192.0.2.255 -p 41214 'hello broadcast'
+    udpsend -a 255.255.255.255 -p 41214 'hello broadcast'
+
+    # You can send a multicast packet.
+    # In the following example:
+    # - 239.192.0.1 is IP multicast group address.
+    # - 192.0.2.11 is your computer's network interface.
+    udpsend -a 239.192.0.1 -m 192.0.2.11 -p 41214 'hello multidcast'
+"""
 
 import argparse
 import ipaddress
@@ -11,10 +33,24 @@ import sys
 
 
 def eprint(*args, **keywords):
+    """Wrapper function of print() (for error messages).
+
+    Args:
+        *args (tuple): Variable length argument list.
+        **keywords (dict[str, Any]): Arbitrary keyword arguments.
+    """
     print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
 
 
 def udpsend(addr, port, sockopt, msg):
+    """Main routine of UDP packet sender.
+
+    Args:
+        addr (str): Target address.
+        port (int): Target port number.
+        sockopt (tuple[int, int, Union[bytes, int]]): Socket option.
+        msg (bytes): Send message.
+    """
     for ai in socket.getaddrinfo(addr, port, socket.AF_UNSPEC,
                                  socket.SOCK_DGRAM):
         family, socktype, protocol, _, sockaddr = ai
@@ -29,6 +65,15 @@ def udpsend(addr, port, sockopt, msg):
 
 
 def select_sockopt(addr, mcast_if):
+    """Select socket option parameter.
+
+    Args:
+        addr (str): Target address.
+        mcast_if (Union[str, None]): IP multicast interface.
+
+    Returns:
+        tuple[int, int, Union[bytes, int]]: Socket option.
+    """
     try:
         ipaddr = ipaddress.ip_address(addr)
     except:
@@ -53,6 +98,11 @@ def select_sockopt(addr, mcast_if):
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'UDP unicast / broadcast / multicast sender for network testing')
 
@@ -72,6 +122,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
 
     addr = args[0].addr[0]
