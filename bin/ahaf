@@ -3,18 +3,42 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) Command line tool to add header and footer. Version 2.0.1.20220417
+"""Command line tool to add header and footer.
+
+Example:
+    $ seq 3 | ahaf -a HEAD -f TAIL
+    HEAD
+    1
+    2
+    3
+    TAIL
+    $ _
+"""
 
 import argparse
 import sys
 
 
 def ahaf(istream, ostream, header, footer):
+    """Insert a header and a footer.
+
+    Args:
+        istream (TextIO): Input text IO stream.
+        ostream (TextIO): Output text IO stream.
+        header (str): Header string.
+        footer (str): Footer string.
+    """
     print(header, file=ostream)
     ostream.write(istream.read())
     print(footer, file=ostream)
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'Command line tool to add header and footer.')
 
@@ -33,6 +57,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
 
     files = args[0].files
