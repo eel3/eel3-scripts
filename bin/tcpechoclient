@@ -3,6 +3,21 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) TCP echo client for network testing. Version 1.0.1.20190221
+"""TCP echo client for network testing.
+
+Example:
+    # Send message 'hello' to the echo server at 127.0.0.1:41214.
+    tcpechoclient -a 127.0.0.1 -p 41214 hello
+
+    # You can specify a IPv6 address.
+    tcpechoclient -a ::1 -p 41214 'hello IPv6'
+
+    # You can specify a FQDN.
+    tcpechoclient -a echo.example.org -p 41214 'hello FQDN'
+
+    # You can specify timeout in seconds (the default is 1 seconds).
+    tcpechoclient -a 127.0.0.1 -p 41215 -t 5 hello
+"""
 
 import argparse
 import socket
@@ -14,10 +29,25 @@ DEFAULT_TIMEOUT_SEC = 1.0
 
 
 def eprint(*args, **keywords):
+    """Wrapper function of print() (for error messages).
+
+    Args:
+        *args (tuple): Variable length argument list.
+        **keywords (dict[str, Any]): Arbitrary keyword arguments.
+    """
     print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
 
 
 def tcp_echo_client(addr, port, msg, timeout, ostream):
+    """Main routine of TCP echo client.
+
+    Args:
+        addr (str): Server address.
+        port (int): Server port number.
+        msg (bytes): Echo message.
+        timeout (float): Connection timeout in seconds.
+        ostream (TextIO): Output text IO stream.
+    """
     with socket.create_connection((addr, port), timeout) as sock:
         sock.sendall(msg)
         data = sock.recv(len(msg) * 2 + 1)
@@ -26,6 +56,11 @@ def tcp_echo_client(addr, port, msg, timeout, ostream):
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'TCP echo client for network testing')
 
@@ -48,6 +83,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
 
     addr = args[0].addr[0]
