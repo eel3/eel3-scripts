@@ -17,8 +17,11 @@ Example:
 """
 
 import argparse
+import os
 import socket
 import sys
+
+progname = os.path.basename(sys.argv[0])
 
 
 def eprint(*args, **keywords):
@@ -28,7 +31,7 @@ def eprint(*args, **keywords):
         *args (tuple): Variable length argument list.
         **keywords (dict[str, Any]): Arbitrary keyword arguments.
     """
-    print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
+    print(progname + ':', *args, file=sys.stderr, **keywords)
 
 
 def udpechoserver(bind_addr, bind_port, ostream):
