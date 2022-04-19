@@ -3,6 +3,37 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) Command line tool to dump RIFF WAVE file. Version 2.0.1.20220417
+"""Command line tool to dump RIFF WAVE file.
+
+Example:
+    $ # Dump samples as big-endian.
+    $ dumpwav sample.wav | head -n 10
+    sampling frequency	44100
+    bytes per sample	2
+    bits per sample	16
+    num of channels	2
+    bytes per frame	4
+    num of frames	1000000
+    frame 0	0000	0000
+    frame 1	0202	0202
+    frame 2	0204	0204
+    frame 3	FF05	FF05
+    $ _
+
+    $ # Dump samples as little-endian.
+    $ dumpwav -l sample.wav | head -n 10
+    sampling frequency	44100
+    bytes per sample	2
+    bits per sample	16
+    num of channels	2
+    bytes per frame	4
+    num of frames	1000000
+    frame 0	0000	0000
+    frame 1	0202	0202
+    frame 2	0402	0402
+    frame 3	05FF	05FF
+    $ _
+"""
 
 import argparse
 import struct
@@ -11,10 +42,33 @@ import wave
 
 
 def dumpwav(wavfile, ostream, opts):
+    """Dump RIFF WAVE file.
+
+    Args:
+        wavfile (str): Target file name.
+        ostream (TextIO): Output text IO stream.
+        opts (argparse.Namespace): Option parameters.
+    """
     def format_sample_big_endian(sample):
+        """Format PCM sample as big-endian.
+
+        Args:
+            sample (bytes): PCM sample.
+
+        Returns:
+            str: Formatted string.
+        """
         return print_fmt % struct.unpack(unpack_fmt, sample)
 
     def format_sample_little_endian(sample):
+        """Format PCM sample as little-endian.
+
+        Args:
+            sample (bytes): PCM sample.
+
+        Returns:
+            str: Formatted string.
+        """
         return format_sample_big_endian(sample[::-1])
 
     wr = wave.open(wavfile, 'rb')
@@ -49,6 +103,11 @@ def dumpwav(wavfile, ostream, opts):
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'Command line tool to dump RIFF WAVE file.')
 
@@ -66,6 +125,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
     retval = 0
 
