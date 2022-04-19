@@ -3,6 +3,18 @@
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
 # @(#) UDP unicast echo server for network testing. Version 1.0.3.20220417
+"""UDP unicast echo server for network testing.
+
+Example:
+    # Start server at 0.0.0.0:41214.
+    udpechoserver -p 41214
+
+    # You can specify a network interface by IP address.
+    udpechoserver -a 127.0.0.1 -p 41214
+
+    # You can specify a IPv6 address.
+    udpechoserver -a ::1 -p 41214
+"""
 
 import argparse
 import socket
@@ -10,10 +22,23 @@ import sys
 
 
 def eprint(*args, **keywords):
+    """Wrapper function of print() (for error messages).
+
+    Args:
+        *args (tuple): Variable length argument list.
+        **keywords (dict[str, Any]): Arbitrary keyword arguments.
+    """
     print(sys.argv[0] + ':', *args, file=sys.stderr, **keywords)
 
 
 def udpechoserver(bind_addr, bind_port, ostream):
+    """Main routine of UDP echo server.
+
+    Args:
+        bind_addr (str): Server bind IP address.
+        bind_port (int): Server bind port number.
+        ostream (TextIO): Output text IO stream.
+    """
     for ai in socket.getaddrinfo(bind_addr, bind_port, socket.AF_UNSPEC,
                                  socket.SOCK_DGRAM):
         family, socktype, protocol, _, sockaddr = ai
@@ -47,6 +72,11 @@ def udpechoserver(bind_addr, bind_port, ostream):
 
 
 def parse_args():
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
     parser = argparse.ArgumentParser(description=
             'UDP unicast echo server for network testing')
 
@@ -64,6 +94,8 @@ def parse_args():
 
 
 def main():
+    """Main routine function.
+    """
     args = parse_args()
 
     retval = 0
