@@ -34,7 +34,7 @@ Set up
     * udpechoclient(1) : Python 3.8.10 or higher
     * udpechoserver(1) : Python 3.8.10 or higher
     * udprecv(1) : Python 3.8.10 or higher
-    * udpsend(1) : Python 3.5.3 or higher
+    * udpsend(1) : Python 3.8.10 or higher
     * linux/myipaddr(1) : ifconfig(8) (on CentOS 7, you must install *net-tools*)
     * linux/writeimg(1) : bzcat(1), gunzip(1), lzcat(1), unzip(1), xzcat(1)
 2. Put all scripts and Makefile in a directory registered in PATH.

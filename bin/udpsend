@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.2.2.20220417
+# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.2.3.20220420
 """UDP unicast / broadcast / multicast sender for network testing.
 
 Example:
@@ -26,16 +26,24 @@ Example:
     udpsend -a 239.192.0.1 -m 192.0.2.11 -p 41214 'hello multidcast'
 """
 
+from __future__ import annotations
+
 import argparse
 import ipaddress
 import os
 import socket
 import sys
 
-progname = os.path.basename(sys.argv[0])
+from typing import Any, Final, NoReturn, Optional, Tuple, Union
+
+# TODO: Use builtins.tuple on Python 3.9 or later.
+# TODO: Use typing.TypeAlias on Python 3.10 or later.
+SocketOption = Tuple[int, int, Union[int, bytes]]
+
+progname: Final[str] = os.path.basename(sys.argv[0])
 
 
-def eprint(*args, **keywords):
+def eprint(*args: Any, **keywords: Any) -> None:
     """Wrapper function of print() (for error messages).
 
     Args:
@@ -45,13 +53,13 @@ def eprint(*args, **keywords):
     print(progname + ':', *args, file=sys.stderr, **keywords)
 
 
-def udpsend(addr, port, sockopt, msg):
+def udpsend(addr: str, port: int, sockopt: SocketOption, msg: bytes) -> None:
     """Main routine of UDP packet sender.
 
     Args:
         addr (str): Target address.
         port (int): Target port number.
-        sockopt (tuple[int, int, Union[bytes, int]]): Socket option.
+        sockopt (SocketOption): Socket option.
         msg (bytes): Send message.
     """
     for ai in socket.getaddrinfo(addr, port, socket.AF_UNSPEC,
@@ -67,15 +75,15 @@ def udpsend(addr, port, sockopt, msg):
     raise ValueError('could not open socket or send packet')
 
 
-def select_sockopt(addr, mcast_if):
+def select_sockopt(addr: str, mcast_if: Optional[str]) -> SocketOption:
     """Select socket option parameter.
 
     Args:
         addr (str): Target address.
-        mcast_if (Union[str, None]): IP multicast interface.
+        mcast_if (Optional[str]): IP multicast interface.
 
     Returns:
-        tuple[int, int, Union[bytes, int]]: Socket option.
+        SocketOption: Socket option.
     """
     try:
         ipaddr = ipaddress.ip_address(addr)
@@ -100,7 +108,7 @@ def select_sockopt(addr, mcast_if):
         raise ValueError('must not happen')
 
 
-def parse_args():
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse CLI arguments.
 
     Returns:
@@ -119,12 +127,12 @@ def parse_args():
     parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 2.2.2')
+                        version='%(prog)s 2.2.3')
 
     return parser.parse_known_args()
 
 
-def main():
+def main() -> NoReturn:
     """Main routine function.
     """
     args = parse_args()
