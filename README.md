@@ -23,7 +23,7 @@ Set up
     * ce(1) : Ruby 2.0.x
     * cew(1) : [Open usp Tukubai](https://github.com/usp-engineers-community/Open-usp-Tukubai "Open usp Tukubai")
     * deadlink(1) : Perl 5
-    * dumpwav(1) : Python 3.6.8 or higher
+    * dumpwav(1) : Python 3.8.10 or higher
     * extpcm(1) : Python 3.6.8 or higher
     * extpcms(1) : Python 3.6.4 or higher
     * funcname(1) : Exuberant Ctags
