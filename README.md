@@ -19,7 +19,7 @@ Set up
 ------
 
 1. If you want to use all scripts, you must install some tools in the dependency.
-    * ahaf(1) : Python 3.6.8 or higher
+    * ahaf(1) : Python 3.8.10 or higher
     * ce(1) : Ruby 2.0.x
     * cew(1) : [Open usp Tukubai](https://github.com/usp-engineers-community/Open-usp-Tukubai "Open usp Tukubai")
     * deadlink(1) : Perl 5
