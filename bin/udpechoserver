@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast echo server for network testing. Version 1.0.3.20220417
+# @(#) UDP unicast echo server for network testing. Version 1.0.4.20220420
 """UDP unicast echo server for network testing.
 
 Example:
@@ -16,15 +16,19 @@ Example:
     udpechoserver -a ::1 -p 41214
 """
 
+from __future__ import annotations
+
 import argparse
 import os
 import socket
 import sys
 
-progname = os.path.basename(sys.argv[0])
+from typing import Any, Final, NoReturn, TextIO
+
+progname: Final[str] = os.path.basename(sys.argv[0])
 
 
-def eprint(*args, **keywords):
+def eprint(*args: Any, **keywords: Any) -> None:
     """Wrapper function of print() (for error messages).
 
     Args:
@@ -34,7 +38,7 @@ def eprint(*args, **keywords):
     print(progname + ':', *args, file=sys.stderr, **keywords)
 
 
-def udpechoserver(bind_addr, bind_port, ostream):
+def udpechoserver(bind_addr: str, bind_port: int, ostream: TextIO) -> None:
     """Main routine of UDP echo server.
 
     Args:
@@ -74,7 +78,7 @@ def udpechoserver(bind_addr, bind_port, ostream):
     raise ValueError('could not open socket')
 
 
-def parse_args():
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
     """Parse CLI arguments.
 
     Returns:
@@ -91,12 +95,12 @@ def parse_args():
     parser.add_argument('-p', '--bind-port', metavar='port', nargs=1, type=int,
                         required=True, help='bind port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.3')
+                        version='%(prog)s 1.0.4')
 
     return parser.parse_known_args()
 
 
-def main():
+def main() -> NoReturn:
     """Main routine function.
     """
     args = parse_args()
