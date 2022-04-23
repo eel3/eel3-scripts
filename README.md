@@ -29,7 +29,7 @@ Set up
     * funcname(1) : Exuberant Ctags
     * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
     * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
-    * tcpechoclient(1) : Python 3.5.3 or higher
+    * tcpechoclient(1) : Python 3.8.10 or higher
     * tcpechoserver(1) : Python 3.5.3 or higher
     * udpechoclient(1) : Python 3.6.9 or higher
     * udpechoserver(1) : Python 3.6.9 or higher
