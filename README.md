@@ -25,7 +25,7 @@ Set up
     * deadlink(1) : Perl 5
     * dumpwav(1) : Python 3.8.10 or higher
     * extpcm(1) : Python 3.8.10 or higher
-    * extpcms(1) : Python 3.6.4 or higher
+    * extpcms(1) : Python 3.8.10 or higher
     * funcname(1) : Exuberant Ctags
     * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
     * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
