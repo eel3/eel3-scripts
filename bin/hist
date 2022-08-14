@@ -9,13 +9,14 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin:/usr/local/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=$(basename "$0")
-readonly version=1.1.1.20191128
+progname=$(basename "$0")
+readonly progname
+readonly version=1.1.2.20220710
 
 # usage <exit-code>
 usage() {
     echo "usage: $progname [-hv] [-c <class-witch>] [-r] [-s <start-number|min>] [file ...]" 1>&2
-    exit $1
+    exit "$1"
 }
 
 # version (no parameter)
@@ -45,13 +46,13 @@ error() {
 # do_exit <status>
 do_exit() {
     rm -f "$tmpfile"
-    exit $1
+    exit "$1"
 }
 
 # main routine
 
 class_width=10
-catcmd=cat
+catcmd='cat'
 start_number=0
 
 opt=
@@ -77,12 +78,11 @@ while getopts 'c:hrs:v' opt; do
             ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 trap 'rm -f "$tmpfile"; exit 1' 1 2 15
 
-tmpfile=$(mktemp "$progname.$$.XXXXXXXXXX")
-[ $? -eq 0 ] || error "cannot create temporary file"
+tmpfile=$(mktemp "$progname.$$.XXXXXXXXXX") || error "cannot create temporary file"
 
 nsamples=$(sed '/^[    ]*$/d' ${@+"$@"} | sort -n | tee "$tmpfile" | wc -l)
 [ "$nsamples" -ge 1 ] || do_exit 0
