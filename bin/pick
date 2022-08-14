@@ -10,8 +10,8 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=${0##*/}
-readonly version=3.1.3.20200621
+readonly progname="${0##*/}"
+readonly version=3.1.4.20220710
 
 # usage <exit-code>
 usage() {
@@ -20,7 +20,7 @@ usage() {
 		       $progname [-f footer] [-h header] [args ...]
 		       $progname [-f footer] [-h header] - <arglist
 	EOT
-    exit $1
+    exit "$1"
 }
 
 # version (no parameter)
@@ -35,7 +35,7 @@ footer='? [Yes|No|Quit]: '
 # do_pick <item>
 do_pick() {
     printf %s%s%s "$header" "$1" "$footer" >/dev/tty
-    read response
+    read -r response
     case "$response" in
     [Yy]|[Yy]es|YES)      echo "$1" ;;
     [Qq]|[Qq]uit|QUIT)    exit ;;
@@ -53,9 +53,9 @@ while getopts 'f:h:v' opt; do
     \?)     usage 1 ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
-if [ $# -eq 1 -a "${1-}" = '-' ]; then
+if [ $# -eq 1 ] && [ "${1-}" = '-' ]; then
     # Trims IFS character from the beginning and end of the $i.
     while read i; do
         do_pick "$i" </dev/tty
