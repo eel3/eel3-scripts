@@ -9,13 +9,13 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=${0##*/}
-readonly version=1.0.1.20200623
+readonly progname="${0##*/}"
+readonly version=1.0.2.20220710
 
 # usage <exit-code>
 usage() {
     echo "usage: $progname [-hv] [-u unexpected-input-error] <prompt>" 1>&2
-    exit $1
+    exit "$1"
 }
 
 # version (no parameter)
@@ -37,14 +37,14 @@ while getopts 'hu:v' opt; do
     \?)     usage 1 ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 [ $# != 0 ] || usage 1
-readonly prompt=${@+"$@"}
+readonly prompt="$*"
 
 while : ; do
     printf '%s (Yes/No/Cancel): ' "$prompt" >/dev/tty
-    read response
+    read -r response
     case "$response" in
     [Yy]|[Yy]es|YES)        exit 0 ;;
     [Nn]|[Nn]o|NO)          exit 1 ;;
