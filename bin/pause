@@ -40,4 +40,4 @@ done
 shift $((OPTIND - 1))
 
 printf %s "$prompt" >/dev/tty
-read
+read -r _
