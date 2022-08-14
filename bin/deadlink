@@ -17,8 +17,8 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin:/usr/local/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=${0##*/}
-readonly version=3.3.1.20200621
+readonly progname="${0##*/}"
+readonly version=3.3.2.20220710
 
 # usage <exit-code>
 usage() {
@@ -27,7 +27,7 @@ usage() {
 		       $progname [file ...]
 		       $progname - <filelist
 	EOT
-    exit $1
+    exit "$1"
 }
 
 # version (no parameter)
@@ -46,12 +46,12 @@ while getopts 'hv' opt; do
     \?)     usage 1 ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
-if [ $# -eq 1 -a "${1-}" = '-' ]; then
+if [ $# -eq 1 ] && [ "${1-}" = '-' ]; then
     perl -n -e 'chomp; -l $_ && ! -e $_ && print "$_\n";'
 else
     for i; do
-        [ -L "$i" -a ! -e "$i" ] && echo "$i"
+        [ -L "$i" ] && [ ! -e "$i" ] && echo "$i"
     done
 fi
