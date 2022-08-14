@@ -9,13 +9,13 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=${0##*/}
-readonly version=1.0.2.20191128
+readonly progname="${0##*/}"
+readonly version=1.0.3.20220710
 
 # usage <exit-code>
 usage() {
     echo "usage: $progname [-hv] [-s size] [-t <random|zero>] [file ...]" 1>&2
-    exit $1
+    exit "$1"
 }
 
 # version (no parameter)
@@ -52,7 +52,7 @@ while getopts 'hs:t:v' opt; do
     \?)     usage 1 ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 isnumber "$size"  || error "-s \"$size\": not number"
 [ "$size" -ge 0 ] || error "-s \"$size\": must be greater or equal to 0"
