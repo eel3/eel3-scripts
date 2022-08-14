@@ -9,8 +9,8 @@ IFS=$(printf ' \t\n_'); IFS=${IFS%_}
 PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
-readonly progname=${0##*/}
-readonly version=1.1.1.20190405
+readonly progname="${0##*/}"
+readonly version=1.1.2.20220710
 
 # usage <exit-code>
 usage() {
@@ -23,7 +23,7 @@ usage() {
 		    -v
 		      Show program's version number and exit.
 	EOT
-    exit $1
+    exit "$1"
 }
 
 # usage_on_ok (nop)
@@ -61,7 +61,7 @@ error_with_usage() {
 
 # main routine
 
-readcmd=cat
+readcmd='cat'
 
 opt=
 while getopts 'd:hv' opt; do
@@ -80,8 +80,8 @@ while getopts 'd:hv' opt; do
     \?)     usage_on_ng ;;
     esac
 done
-shift $(($OPTIND - 1))
+shift $((OPTIND - 1))
 
 [ $# -eq 2 ] || error_with_usage 'Need 2 arguments'
 
-$readcmd $1 | sudo dd "of=$2" bs=64K iflag=fullblock oflag=direct
+$readcmd "$1" | sudo dd "of=$2" bs=64K iflag=fullblock oflag=direct
