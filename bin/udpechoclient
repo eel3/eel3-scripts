@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast echo client for network testing. Version 1.0.3.20220420
+# @(#) UDP unicast echo client for network testing. Version 1.1.0.20220904
 """UDP unicast echo client for network testing.
 
 Example:
@@ -38,12 +38,17 @@ def eprint(*args: Any, **keywords: Any) -> None:
     print(progname + ':', *args, file=sys.stderr, **keywords)
 
 
-def udpechoclient(addr: str, port: int, msg: bytes, ostream: TextIO) -> None:
+def udpechoclient(addr: str,
+                  port: int,
+                  bind_port: int,
+                  msg: bytes,
+                  ostream: TextIO) -> None:
     """Main routine of UDP echo client.
 
     Args:
         addr (str): Server address.
         port (int): Server port number.
+        bind_port (int): My bind port number.
         msg (bytes): Echo message.
         ostream (TextIO): Output text IO stream.
     """
@@ -52,6 +57,8 @@ def udpechoclient(addr: str, port: int, msg: bytes, ostream: TextIO) -> None:
         family, socktype, protocol, _, sockaddr = ai
         try:
             with socket.socket(family, socktype, protocol) as sock:
+                if bind_port != 0:
+                    sock.bind(('', bind_port))
                 sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
                 print('send to', sockaddr[0], 'port', sockaddr[1], ':',
                       repr(msg), file=ostream)
@@ -92,13 +99,15 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
                         help='messages to send')
     parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
                         required=True, help='target address')
+    parser.add_argument('-b', '--bind-port', metavar='port', nargs=1, type=int,
+                        default=[0], help='bind port')
     parser.add_argument('-o', '--output', metavar='file', nargs=1,
                         type=argparse.FileType('w'), default=[sys.stdout],
                         help='place output in file')
     parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.3')
+                        version='%(prog)s 1.1.0')
 
     return parser.parse_known_args()
 
@@ -115,7 +124,8 @@ def main() -> NoReturn:
     if len(msgs) > 0:
         try:
             udpechoclient(args[0].addr[0], args[0].port[0],
-                          '\n'.join(msgs).encode(), args[0].output[0])
+                          args[0].bind_port[0], '\n'.join(msgs).encode(),
+                          args[0].output[0])
         except Exception as e:
             eprint(e)
             retval = 1
