@@ -1,0 +1,58 @@
+#!/bin/sh
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) Generate a PIN code.
+# need pwgen(1)
+
+set -u
+umask 0022
+IFS=$(printf ' \t\n_'); IFS=${IFS%_}
+PATH=/bin:/usr/bin
+export IFS LC_ALL=C LANG=C PATH
+
+readonly progname="${0##*/}"
+readonly version=1.0.0.20230930
+
+# usage <exit-code>
+usage() {
+    echo "usage: $progname [-hv] [-d <digits>]" 1>&2
+    exit "$1"
+}
+
+# version (no parameter)
+version() {
+    echo "$progname $version" 1>&2
+    exit 0
+}
+
+# error <message>
+error() {
+    echo "$progname:" ${@+"$@"} 1>&2
+    exit 1
+}
+
+# isnumber <value>
+isnumber() {
+    [ "$1" -eq 0 ] 2>/dev/null
+    [ $? -lt 2 ]
+}
+
+# main routine
+
+digits=4
+
+opt=
+while getopts 'd:hv' opt; do
+    case $opt in
+    d)      digits=$OPTARG ;;
+    h)      usage 0 ;;
+    v)      version ;;
+    \?)     usage 1 ;;
+    esac
+done
+shift $((OPTIND - 1))
+
+isnumber "$digits"  || error "-s \"$digits\": not number"
+[ "$digits" -gt 0 ] || error "-s \"$digits\": must be greater than 0"
+
+pwgen -A -r abcdefghijklmnopqrstuvwxyz -s "$digits" 1
