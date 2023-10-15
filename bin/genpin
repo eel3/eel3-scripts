@@ -53,6 +53,6 @@ done
 shift $((OPTIND - 1))
 
 isnumber "$digits"  || error "-d $digits: not number"
-[ "$digits" -gt 0 ] || error "-d $digits: must be greater than 0"
+[ "$digits" -ge 1 ] || error "-d $digits: must be greater than or equal to 1"
 
 pwgen -A -r abcdefghijklmnopqrstuvwxyz -s "$digits" 1
