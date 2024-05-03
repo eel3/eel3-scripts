@@ -10,13 +10,13 @@ PATH=/bin:/usr/bin
 export IFS LC_ALL=C LANG=C PATH
 
 readonly progname="${0##*/}"
-readonly version=1.1.2.20220710
+readonly version=1.2.0.20240503
 
 # usage <exit-code>
 usage() {
     cat <<- EOT
 		usage: $progname [options] <image file> <device file>
-		    -d <bzip2|gzip|lzma|xz|zip>
+		    -d <bzip2|gzip|lzma|none|xz|zip>
 		      Decompress the compressed image file and write it.
 		    -h
 		      Show this help message and exit.
@@ -61,16 +61,17 @@ error_with_usage() {
 
 # main routine
 
-readcmd='cat'
+readcmd=
 
 opt=
 while getopts 'd:hv' opt; do
     case $opt in
-    d)      [ "$readcmd" != cat ] && perror "-$opt: Duplicated. Use last one."
+    d)      [ -n "$readcmd" ] && perror "-$opt: Duplicated. Use last one."
             case "$OPTARG" in
             bzip2)  readcmd=bzcat ;;
             gzip)   readcmd='gunzip -c' ;;
             lzma)   readcmd=lzcat ;;
+            none)   readcmd='cat' ;;
             xz)     readcmd=xzcat ;;
             zip)    readcmd='unzip -p' ;;
             *)      error_with_usage "-$opt: Unknown argument: $OPTARG" ;;
@@ -83,5 +84,16 @@ done
 shift $((OPTIND - 1))
 
 [ $# -eq 2 ] || error_with_usage 'Need 2 arguments'
+
+if [ -z "$readcmd" ]; then
+    case $1 in
+        *.bz|*.bz2)     readcmd=bzcat ;;
+        *.gz)           readcmd='gunzip -c' ;;
+        *.lzma)         readcmd=lzcat ;;
+        *.xz)           readcmd=xzcat ;;
+        *.zip)          readcmd='unzip -p' ;;
+        *)              readcmd='cat' ;;
+    esac
+fi
 
 $readcmd "$1" | sudo dd "of=$2" bs=64K iflag=fullblock oflag=direct
