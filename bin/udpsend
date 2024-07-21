@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.3.0.20220904
+# @(#) UDP unicast / broadcast / multicast sender for network testing. Version 2.3.1.20240719
 """UDP unicast / broadcast / multicast sender for network testing.
 
 Example:
@@ -72,7 +72,7 @@ def udpsend(addr: str,
         family, socktype, protocol, _, sockaddr = ai
         try:
             with socket.socket(family, socktype, protocol) as sock:
-                if bind_port != 0:
+                if bind_port >= 0:
                     sock.bind(('', bind_port))
                 sock.setsockopt(*sockopt)
                 sock.sendto(msg, sockaddr)
@@ -129,14 +129,14 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
     parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
                         required=True, help='target address')
     parser.add_argument('-b', '--bind-port', metavar='port', nargs=1, type=int,
-                        default=[0], help='bind port')
+                        default=[-1], help='bind port')
     parser.add_argument('-m', '--multicast-if', metavar='multicast_if', nargs=1,
                         help=('the outgoing network interface for sending multicast traffic'
                               ' (IPv4: IP address, IPv6: index number)'))
     parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
                         required=True, help='target port')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 2.3.0')
+                        version='%(prog)s 2.3.1')
 
     return parser.parse_known_args()
 
