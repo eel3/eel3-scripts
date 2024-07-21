@@ -30,6 +30,7 @@ Set up
     * genpin(1) : pwgen(1)
     * mdc(1) : Node.js, [marked](https://github.com/chjj/marked "marked")
     * myindent(1) : [Artistic Style](http://astyle.sourceforge.net/ "Artistic Style"), Perl 5
+    * sntptestclient(1) : Python 3.10.11 or higher
     * tcpechoclient(1) : Python 3.8.10 or higher
     * tcpechoserver(1) : Python 3.8.10 or higher
     * udpechoclient(1) : Python 3.8.10 or higher

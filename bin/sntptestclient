@@ -1,0 +1,485 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+# -*- coding: utf-8-unix -*-
+# vim:fileencoding=utf-8:ff=unix
+# @(#) SNTP test client. Version 1.0.0.20240721
+"""SNTP test client.
+
+Example:
+    # Send a SNTP packet to ntp.example.org.
+    sntptestclient -a ntp.example.org
+
+    # You can specify a source port number.
+    sntptestclient -a ntp.example.org -b 123
+
+    # Same as '-b 123'.
+    sntptestclient -a ntp.example.org -B
+
+    # You can specify a target port number (for testing).
+    sntptestclient -a 192.0.2.101 -p 123
+"""
+
+import argparse
+import os
+import socket
+import struct
+import sys
+import time
+
+from dataclasses import dataclass
+from typing import Annotated, Any, Final, NoReturn, Optional, TextIO
+
+progname: Final[str] = os.path.basename(sys.argv[0])
+"""This program file's name.
+"""
+
+DEFAULT_SNTP_PORT: Final[int] = 123
+"""Default NTP/SNTP port number.
+"""
+YEAR_70_IN_SECS: Final[int] = 2208988800
+""" 70 years in seconds (from 1900 to 1970, without leap seconds).
+"""
+BASIC_MESSAGE_SIZE: Final[int] = 48
+"""Size of NTP/SNTP basic message in bytes.
+"""
+OPTION_MESSAGE_SIZE: Final[int] = 20
+"""Size of NTP/SNTP optional message in bytes.
+"""
+FULL_MESSAGE_SIZE: Final[int] = BASIC_MESSAGE_SIZE + OPTION_MESSAGE_SIZE
+"""Size of NTP/SNTP full message in bytes.
+"""
+
+
+@dataclass
+class Timestamp:
+    """NTP/SNTP timestamp (64-bit unsigned fixed-point number).
+    """
+    sec: int
+    """Seconds since 1900/01/01 00:00:00 (32-bit)."""
+    fraction: int
+    """Fraction of second (32-bit)."""
+
+
+@dataclass
+class Authenticator:
+    """NTP/SNTP Authenticator fields (20-byte).
+    """
+    key_identifier: int
+    """Key Identifier (32-bit)."""
+    message_digest: Annotated[bytes, 16]
+    """Message Digest (128-bit)."""
+
+
+@dataclass
+class Message:
+    """NTP/SNTP message fields (48/68-byte).
+    """
+    leap_indicator: int
+    """Leap Indicator (LI, 2-bit)."""
+    version_number: int
+    """Version Number (VN, 3-bit)."""
+    mode: int
+    """Mode (3-bit)."""
+    stratum: int
+    """Stratum (8-bit)."""
+    poll_interval: int
+    """Poll Interval (Poll, 8-bit)."""
+    precision: int
+    """Precision (8-bit)."""
+    root_delay: int
+    """Root Delay (32-bit)."""
+    root_dispersion: int
+    """Root Dispersion (32-bit)."""
+    reference_identifier: Annotated[bytes, 4]
+    """Reference Identifier (32-bit)."""
+    reference_timestamp: Timestamp
+    """Reference Timestamp (64-bit)."""
+    originate_timestamp: Timestamp
+    """Originate Timestamp (64-bit)."""
+    receive_timestamp: Timestamp
+    """Receive Timestamp (64-bit)."""
+    transmit_timestamp: Timestamp
+    """Transmit Timestamp (64-bit)."""
+    authenticator: Optional[Authenticator]
+    """Authenticator (optional, 160-bit)."""
+
+
+def eprint(*args: Any, **keywords: Any) -> None:
+    """Wrapper function of print() (for error messages).
+
+    Args:
+        *args (tuple): Variable length argument list.
+        **keywords (dict[str, Any]): Arbitrary keyword arguments.
+    """
+    print(progname + ':', *args, file=sys.stderr, **keywords)
+
+
+def frac_from_nsec(nsec: int) -> int:
+    """Convert from nanosecond to NTP fraction of second.
+
+    Args:
+        nsec (int): Time in nanosecond.
+
+    Returns:
+        int: NTP fraction of second.
+    """
+    return int(nsec / 500000000 * 0x80000000)
+
+
+def nsec_from_frac(frac: int) -> int:
+    """Convert from NTP fraction of second to nanosecond.
+
+    Args:
+        frac (int): NTP fraction of second.
+
+    Returns:
+        int: Time in nanosecond.
+    """
+    return int(frac / 0x80000000 * 500000000)
+
+
+def ntp_time_from_unix_time(nsec: int) -> Timestamp:
+    """Convert from Unix time in nanoseconds to NTP/SNTP timestamp.
+
+    Args:
+        nsec (int): Unix time in nanoseconds.
+
+    Returns:
+        Timestamp: NTP/SNTP timestamp.
+    """
+    tv_sec, tv_nsec = divmod(nsec, 1000000000)
+    return Timestamp(tv_sec + YEAR_70_IN_SECS, frac_from_nsec(tv_nsec))
+
+
+def unix_time_from_ntp_time(ts: Timestamp) -> int:
+    """Convert from NTP/SNTP timestamp to Unix time in nanoseconds.
+
+    Args:
+        ts (Timestamp): NTP/SNTP timestamp.
+
+    Returns:
+        int: Unix time in nanoseconds.
+    """
+    return (ts.sec - YEAR_70_IN_SECS) * 1000000000 + nsec_from_frac(ts.fraction)
+
+
+def encode_message(msg: Message) -> bytes:
+    """Encode NTP/SNTP message.
+
+    Args:
+        msg (Message): Decoded value.
+
+    Returns:
+        bytes: Encoded value.
+    """
+    li_vn_mode = (msg.leap_indicator & 0x03) << 6 | \
+                 (msg.version_number & 0x07) << 3 | \
+                 (msg.mode           & 0x07)
+    
+    data = struct.pack(
+        '!BBBBLL4sLLLLLLLL',
+        li_vn_mode,
+        msg.stratum,
+        msg.poll_interval,
+        msg.precision,
+        msg.root_delay,
+        msg.root_dispersion,
+        msg.reference_identifier,
+        msg.receive_timestamp.sec,
+        msg.receive_timestamp.fraction,
+        msg.originate_timestamp.sec,
+        msg.originate_timestamp.fraction,
+        msg.receive_timestamp.sec,
+        msg.receive_timestamp.fraction,
+        msg.transmit_timestamp.sec,
+        msg.transmit_timestamp.fraction
+    )
+
+    if msg.authenticator is not None:
+        data += struct.pack(
+            '!L16s',
+            msg.authenticator.key_identifier,
+            msg.authenticator.message_digest
+        )
+
+    return data
+
+
+def decode_message(msg: bytes) -> Message:
+    """Decode NTP/SNTP Message.
+
+    Args:
+        msg (bytes): Encoded value.
+
+    Returns:
+        Message: Decoded value.
+    """
+    li_vn_mode, \
+    stratum, \
+    poll, \
+    precision, \
+    root_delay, \
+    root_dispersion, \
+    reference_identifier, \
+    reference_timestamp_sec, \
+    reference_timestamp_frac, \
+    originate_timestamp_sec, \
+    originate_timestamp_frac, \
+    receive_timestamp_sec, \
+    receive_timestamp_frac, \
+    transmit_timestamp_sec, \
+    transmit_timestamp_frac, \
+    = struct.unpack('!BBBBLL4sLLLLLLLL', msg)
+
+    li = li_vn_mode >> 6 & 0x03
+    vn = li_vn_mode >> 3 & 0x07
+    mode = li_vn_mode & 0x07
+
+    if len(msg) >= FULL_MESSAGE_SIZE:
+        key_identifier, \
+        message_digest \
+        = struct.unpack_from('!L16s', msg, BASIC_MESSAGE_SIZE)
+        auth = Authenticator(key_identifier, message_digest)
+    else:
+        auth = None
+
+    return Message(
+        li, vn, mode, stratum, poll, precision,
+        root_delay,
+        root_dispersion,
+        reference_identifier,
+        Timestamp(reference_timestamp_sec, reference_timestamp_frac),
+        Timestamp(originate_timestamp_sec, originate_timestamp_frac),
+        Timestamp(receive_timestamp_sec,   receive_timestamp_frac),
+        Timestamp(transmit_timestamp_sec,  transmit_timestamp_frac),
+        auth
+    )
+
+
+def make_request_message(nsec: int) -> bytes:
+    """Make SNTP request message.
+
+    Args:
+        nsec (int): Unix time in nanoseconds.
+
+    Returns:
+        bytes: SNTP packet.
+    """
+    return encode_message(Message(
+        0, 4, 3,                        # LI, VN, Mode
+        0,                              # Stratum
+        0,                              # Poll Interval
+        0,                              # Precision
+        0,                              # Root Delay
+        0,                              # Root Dispersion
+        b'\x00\x00\x00\x00',            # Reference Identifier
+        Timestamp(0, 0),                # Reference Timestamp
+        Timestamp(0, 0),                # Originate Timestamp
+        Timestamp(0, 0),                # Receive Timestamp
+        ntp_time_from_unix_time(nsec),  # Transmit Timestamp
+        None
+    ))
+
+
+def decode_li(li: int) -> str:
+    """Decode Leap Indicator (LI) field.
+
+    Args:
+        li (int): Encoded value.
+
+    Returns:
+        str: Decoded value.
+    """
+    return [
+        'no warning',
+        'last minute has 61 seconds',
+        'last minute has 59 seconds',
+        'alarm condition (clock not synchronized)'
+    ][li]
+
+
+def decode_mode(mode: int) -> str:
+    """Decode Mode field.
+
+    Args:
+        mode (int): Encoded value.
+
+    Returns:
+        str: Decoded value.
+    """
+    return [
+        'reserved',
+        'symmetric active',
+        'symmetric passive',
+        'client',
+        'server',
+        'broadcast',
+        'reserved for NTP control message',
+        'reserved for private use'
+    ][mode]
+
+
+def decode_stratum(stratum: int) -> str:
+    """Decode Stratum field.
+
+    Args:
+        stratum (int): Encoded value.
+
+    Returns:
+        str: Decoded value.
+    """
+    match stratum:
+        case 0:
+            return "kiss-o'-death message"
+        case 1:
+            return 'primary reference'
+        case i if 2 <= i and i <= 15:
+            return 'secondary reference'
+        case 16:
+            return 'clock not synchronized'
+        case _:
+            return 'reserved'
+
+
+def decode_ri(ri: bytes, stratum: int) -> str:
+    """Decode Reference Identifier (RI) field.
+
+    Args:
+        ri (bytes): Encoded value.
+        stratum (int): Stratum.
+
+    Returns:
+        str: Decoded value.
+    """
+    match stratum:
+        case 0 | 1:
+            return ri.decode()
+        case _:
+            return socket.inet_ntoa(ri)
+
+
+def print_response_message(msg: Message, tm: int, ostream: TextIO) -> None:
+    """Show the NTP/SNTP response message.
+
+    Args:
+        msg (Message): Received message.
+        tm (int): Received time (Unix time in nanoseconds).
+        ostream (TextIO): Output text IO stream.
+    """
+    print(f"""\
+Leap-Indicator          {msg.leap_indicator} [{decode_li(msg.leap_indicator)}]
+Version-Number          {msg.version_number}
+Mode                    {msg.mode} [{decode_mode(msg.mode)}]
+Stratum                 {msg.stratum} [{decode_stratum(msg.stratum)}]
+Poll-Interval           {msg.poll_interval}
+Precision               {msg.precision}
+Root-Delay              {msg.root_delay}
+Root-Dispersion         {msg.root_dispersion}
+Reference-Identifier    {struct.unpack('!L', msg.reference_identifier)[0]} [{decode_ri(msg.reference_identifier, msg.stratum)}]
+Reference-Timestamp     {msg.reference_timestamp.sec}.{msg.reference_timestamp.fraction}
+Originate-Timestamp     {msg.originate_timestamp.sec}.{msg.originate_timestamp.fraction}
+Receive-Timestamp       {msg.receive_timestamp.sec}.{msg.receive_timestamp.fraction}
+Transmit-Timestamp      {msg.transmit_timestamp.sec}.{msg.transmit_timestamp.fraction}
+""", file=ostream)
+
+    t1 = unix_time_from_ntp_time(msg.originate_timestamp)
+    t2 = unix_time_from_ntp_time(msg.receive_timestamp)
+    t3 = unix_time_from_ntp_time(msg.transmit_timestamp)
+    t4 = unix_time_from_ntp_time(ntp_time_from_unix_time(tm))
+    rtt = (t4 - t1) - (t3 - t2);
+    print(f'RTT(msec) --> {rtt / 1000000}', file=ostream)
+
+
+def sntptestclient(addr: str,
+                   port: int,
+                   bind_port: int,
+                   ostream: TextIO) -> None:
+    """Main routine of SNTP test client.
+
+    Args:
+        addr (str): Server address.
+        port (int): Server port number.
+        bind_port (int): My bind port number.
+        ostream (TextIO): Output text IO stream.
+    """
+    for ai in socket.getaddrinfo(addr, port, socket.AF_UNSPEC,
+                                 socket.SOCK_DGRAM):
+        family, socktype, protocol, _, sockaddr = ai
+        try:
+            with socket.socket(family, socktype, protocol) as sock:
+                if bind_port >= 0:
+                    sock.bind(('', bind_port))
+                sock.connect(sockaddr)
+                print('request to', sockaddr[0], 'port', sockaddr[1], file=ostream)
+                sock.sendall(make_request_message(time.time_ns()))
+
+                # Workaround to handle keyboard interrupt on Windows.
+                sock.settimeout(0.05)
+
+                while True:
+                    try:
+                        data = sock.recv(FULL_MESSAGE_SIZE)
+                    except socket.timeout:
+                        continue
+                    tm = time.time_ns()
+                    msg = decode_message(data)
+                    print('', file=ostream)
+                    print_response_message(msg, tm, ostream)
+                    ostream.flush()
+                    break
+        except OSError:
+            continue
+        except KeyboardInterrupt:
+            pass
+        return
+    raise ValueError('could not open socket or send packet')
+
+
+def parse_args() -> tuple[argparse.Namespace, list[str]]:
+    """Parse CLI arguments.
+
+    Returns:
+        tuple[argparse.Namespace, list[str]]: Results of argument parsing.
+    """
+    parser = argparse.ArgumentParser(description='SNTP test client')
+
+    parser.add_argument('-a', '--addr', metavar='addr', nargs=1,
+                        required=True, help='target address')
+    parser.add_argument('-b', '--bind-port', metavar='port', nargs=1, type=int,
+                        default=[-1], help='bind port (default is NO)')
+    parser.add_argument('-B', '--bind-sntp-port', action='store_true',
+                        help=f'bind to port {DEFAULT_SNTP_PORT} (default is NO)')
+    parser.add_argument('-o', '--output', metavar='file', nargs=1,
+                        type=argparse.FileType('w'), default=[sys.stdout],
+                        help='place output in file')
+    parser.add_argument('-p', '--port', metavar='port', nargs=1, type=int,
+                        default=[DEFAULT_SNTP_PORT],
+                        help=f'target port (default is {DEFAULT_SNTP_PORT})')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 1.0.0')
+
+    return parser.parse_known_args()
+
+
+def main() -> NoReturn:
+    """Main routine function.
+    """
+    args = parse_args()
+
+    if args[0].bind_sntp_port:
+        args[0].bind_port[0] = DEFAULT_SNTP_PORT
+
+    retval = 0
+
+    try:
+        sntptestclient(args[0].addr[0], args[0].port[0],
+                       args[0].bind_port[0], args[0].output[0])
+    except Exception as e:
+        eprint(e)
+        retval = 1
+
+    sys.exit(retval)
+
+
+if __name__ == '__main__':
+    main()
