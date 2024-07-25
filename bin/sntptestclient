@@ -175,7 +175,7 @@ def encode_message(msg: Message) -> bytes:
     li_vn_mode = (msg.leap_indicator & 0x03) << 6 | \
                  (msg.version_number & 0x07) << 3 | \
                  (msg.mode           & 0x07)
-    
+
     data = struct.pack(
         '!BBBBLL4sLLLLLLLL',
         li_vn_mode,
