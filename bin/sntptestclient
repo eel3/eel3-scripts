@@ -2,7 +2,7 @@
 # encoding: utf-8
 # -*- coding: utf-8-unix -*-
 # vim:fileencoding=utf-8:ff=unix
-# @(#) SNTP test client. Version 1.0.0.20240721
+# @(#) SNTP test client. Version 1.0.1.20240729
 """SNTP test client.
 
 Example:
@@ -177,7 +177,7 @@ def encode_message(msg: Message) -> bytes:
                  (msg.mode           & 0x07)
 
     data = struct.pack(
-        '!BBBBLL4sLLLLLLLL',
+        '!BBBblL4sLLLLLLLL',
         li_vn_mode,
         msg.stratum,
         msg.poll_interval,
@@ -229,7 +229,7 @@ def decode_message(msg: bytes) -> Message:
     receive_timestamp_frac, \
     transmit_timestamp_sec, \
     transmit_timestamp_frac, \
-    = struct.unpack('!BBBBLL4sLLLLLLLL', msg)
+    = struct.unpack('!BBBblL4sLLLLLLLL', msg)
 
     li = li_vn_mode >> 6 & 0x03
     vn = li_vn_mode >> 3 & 0x07
@@ -456,7 +456,7 @@ def parse_args() -> tuple[argparse.Namespace, list[str]]:
                         default=[DEFAULT_SNTP_PORT],
                         help=f'target port (default is {DEFAULT_SNTP_PORT})')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 1.0.0')
+                        version='%(prog)s 1.0.1')
 
     return parser.parse_known_args()
 
